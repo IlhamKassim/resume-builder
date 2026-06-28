@@ -7,10 +7,10 @@
 - [x] Add `.env.local` with `ANTHROPIC_API_KEY` placeholder
 - [x] Smoke test: `npm run build` passes clean, shadcn/ui Button renders
 
-## Slice 2 — Type Definitions
-- [ ] Define `ProfileData`, `ResumeData`, `TailorRequest` in `lib/types.ts`
-- [ ] Write Zod schemas for all three types
-- [ ] Unit tests: schemas accept valid fixtures, reject invalid ones
+## Slice 2 — Type Definitions ✅
+- [x] Define `ProfileData`, `ResumeData`, `TailorRequest` in `lib/types.ts`
+- [x] Write Zod schemas for all three types
+- [x] Unit tests: schemas accept valid fixtures, reject invalid ones (15 tests)
 
 ## Slice 3 — LinkedIn Profile Pipeline
 - [ ] Build `lib/linkedin.ts` (server-side fetch + cheerio parse)
