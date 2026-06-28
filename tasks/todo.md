@@ -21,12 +21,12 @@
 
 ## ✅ Checkpoint A — Manually verify real LinkedIn profile data
 
-## Slice 4 — Claude Tailoring Pipeline
-- [ ] Build `lib/claude.ts` (Anthropic SDK + prompt with no-hallucination constraint)
-- [ ] Build `app/api/tailor/route.ts`
-- [ ] Zod-validate Claude JSON output
-- [ ] Integration test: fixture profile + job description → valid `ResumeData`
-- [ ] Manual accuracy test: zero hallucinated facts
+## Slice 4 — Claude Tailoring Pipeline ✅
+- [x] Build `lib/claude.ts` (Anthropic SDK + prompt with no-hallucination constraint)
+- [x] Build `app/api/tailor/route.ts`
+- [x] Zod-validate Claude JSON output
+- [x] Integration test: fixture profile + job description → valid `ResumeData` (5 tests)
+- [ ] Manual accuracy test: zero hallucinated facts (pending full LinkedIn export)
 
 ## ✅ Checkpoint B — Manually verify AI output accuracy
 
