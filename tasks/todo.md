@@ -1,11 +1,11 @@
 # Resume Builder — Task List
 
-## Slice 1 — Project Scaffold
-- [ ] Init Next.js 14 (App Router) + TypeScript strict mode
-- [ ] Configure Tailwind CSS + shadcn/ui
-- [ ] Install dependencies: `@anthropic-ai/sdk`, `@react-pdf/renderer`, `cheerio`, `zod`
-- [ ] Add `.env.local` with `ANTHROPIC_API_KEY` placeholder
-- [ ] Smoke test: `npm run dev` opens, shadcn/ui Button renders
+## Slice 1 — Project Scaffold ✅
+- [x] Init Next.js 14 (App Router) + TypeScript strict mode
+- [x] Configure Tailwind CSS + shadcn/ui
+- [x] Install dependencies: `@anthropic-ai/sdk`, `@react-pdf/renderer`, `cheerio`, `zod`
+- [x] Add `.env.local` with `ANTHROPIC_API_KEY` placeholder
+- [x] Smoke test: `npm run build` passes clean, shadcn/ui Button renders
 
 ## Slice 2 — Type Definitions
 - [ ] Define `ProfileData`, `ResumeData`, `TailorRequest` in `lib/types.ts`
