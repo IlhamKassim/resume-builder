@@ -36,14 +36,14 @@
 - [ ] Only render populated sections
 - [ ] Snapshot tests: full resume, experience-only, no projects
 
-## Slice 6 — End-to-End UI
-- [ ] Build `app/page.tsx` (two-step input UI)
-- [ ] Build `app/preview/page.tsx` (read-only preview + download)
-- [ ] Build `ProfileInput.tsx`, `JobDescriptionInput.tsx`, `ResumePreview.tsx`
-- [ ] Wire full flow with loading states
-- [ ] Session storage for `ProfileData`
+## Slice 6 — End-to-End UI ✅
+- [x] Build `app/page.tsx` (two-step input UI)
+- [x] Build `app/preview/page.tsx` (read-only preview + download)
+- [x] Build `ProfileInput.tsx`, `JobDescriptionInput.tsx`, `ResumePreview.tsx`
+- [x] Wire full flow with loading states
+- [x] Session storage for `ProfileData`
 
-## ✅ Checkpoint C — Full golden path with real data
+## ✅ Checkpoint C — Full golden path with real data ✅
 
 ## Slice 7 — Error Handling + Fallbacks
 - [ ] LinkedIn block → PDF upload fallback
