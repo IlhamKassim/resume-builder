@@ -3,18 +3,18 @@ import { z } from "zod";
 const ExperienceSchema = z.object({
   company: z.string().min(1),
   title: z.string().min(1),
-  startDate: z.string().min(1),
+  startDate: z.string(),
   endDate: z.string().nullable(),
-  bullets: z.array(z.string().min(1)),
+  bullets: z.array(z.string()),
   location: z.string().optional(),
 });
 
 const EducationSchema = z.object({
   school: z.string().min(1),
-  degree: z.string().min(1),
-  field: z.string().min(1),
-  startDate: z.string().min(1),
-  endDate: z.string().min(1),
+  degree: z.string(),
+  field: z.string(),
+  startDate: z.string(),
+  endDate: z.string(),
   description: z.string().optional(),
 });
 

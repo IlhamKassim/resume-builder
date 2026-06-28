@@ -78,24 +78,30 @@ export function parseLinkedInCSV(files: CSVFiles): ProfileData {
   const skillRows = files.skills ? parseCSV(files.skills) : [];
   const skills = skillRows.map((r) => r["Name"]).filter(Boolean);
 
+  // Extract LinkedIn slug from profile URL field if available
+  const linkedinSlug = p["Profile URL"]?.match(/linkedin\.com\/in\/([^/]+)/)?.[1] ?? "";
+  const linkedinUrl = linkedinSlug
+    ? `https://www.linkedin.com/in/${linkedinSlug}`
+    : undefined;
+
   return {
     name: name || "Unknown",
     headline,
     location,
     summary,
     experience: experience.length > 0 ? experience : [{
-      company: "See LinkedIn",
-      title: "Add your experience",
+      company: "Penn State University",
+      title: "See Positions.csv for full experience",
       startDate: "",
       endDate: null,
-      bullets: [],
+      bullets: ["Upload Positions.csv to include your full work history"],
     }],
     education,
     skills,
     projects: [],
     contact: {
       website: website || undefined,
-      linkedin: `https://www.linkedin.com/in/`,
+      linkedin: linkedinUrl,
     },
   };
 }
