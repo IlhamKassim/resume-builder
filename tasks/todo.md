@@ -12,12 +12,12 @@
 - [x] Write Zod schemas for all three types
 - [x] Unit tests: schemas accept valid fixtures, reject invalid ones (15 tests)
 
-## Slice 3 — LinkedIn Profile Pipeline
-- [ ] Build `lib/linkedin.ts` (server-side fetch + cheerio parse)
-- [ ] Build `app/api/profile/route.ts`
-- [ ] Zod-validate scrape output
-- [ ] Return user-facing error on scrape failure
-- [ ] Unit test: parser extracts correct data from fixture HTML
+## Slice 3 — LinkedIn Profile Pipeline ✅
+- [x] Build `lib/linkedin.ts` (server-side fetch + cheerio parse)
+- [x] Build `app/api/profile/route.ts`
+- [x] Zod-validate scrape output
+- [x] Return user-facing error on scrape failure
+- [x] Unit test: parser extracts correct data from fixture HTML (17 tests)
 
 ## ✅ Checkpoint A — Manually verify real LinkedIn profile data
 
