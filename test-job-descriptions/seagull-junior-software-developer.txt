@@ -1,0 +1,23 @@
+Junior Software Developer
+Seagull Cooling Technologies (Asia Pacific) Sdn. Bhd.
+Pusat Bandar Damansara, Kuala Lumpur
+
+Key Responsibilities:
+- Application Development: Develop and maintain web applications and internal business systems, actively supporting both frontend and backend development activities.
+- System Integration & Databases: Work directly with databases, APIs, and modern system integrations to ensure seamless data flow and functionality.
+- Testing & Maintenance: Assist in debugging, testing, troubleshooting, and continuous improvement of existing software applications.
+- Deployment Support: Participate in software deployment, version maintenance, and ongoing system enhancement activities.
+- Documentation: Prepare and meticulously maintain technical documentation when required.
+- Team Collaboration: Collaborate with senior developers, cross-functional project teams, and business users to understand functional requirements and deliver impactful technical solutions.
+
+Job Requirements:
+- Diploma or Bachelor's Degree in Computer Science, Software Engineering, Information Technology, or a related field
+- Fresh Graduates to 2 years of working experience. Fresh graduates are highly encouraged to apply
+- Having internship or academic project experience in software development is a strong advantage
+- Basic to intermediate knowledge of C#, .NET Core, and Python
+- Experience with PHP (Laravel) is an added advantage
+- Strong problem-solving mindset and highly analytical thinking skills
+- A positive attitude with a strong willingness and passion to learn new technologies
+- Excellent interpersonal, communication, and teamwork skills
+- Self-motivated, with the ability to work independently with minimal supervision when required
+- Strong attention to detail and an unyielding commitment to software quality
