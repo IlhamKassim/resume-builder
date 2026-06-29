@@ -4,12 +4,21 @@ interface Props {
   data: ResumeData;
 }
 
-function formatDate(date: string | null): string {
-  if (!date) return "Present";
+function formatDate(date: string | null | undefined): string {
+  if (date === null || date === undefined) return "Present";
+  if (!date) return "";
   const [year, month] = date.split("-");
   if (!month) return year;
   const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   return `${months[parseInt(month, 10) - 1]} ${year}`;
+}
+
+function dateRange(start: string, end: string | null): string {
+  const s = formatDate(start);
+  const e = formatDate(end);
+  if (!s && !e) return "";
+  if (!s) return e;
+  return `${s} – ${e}`;
 }
 
 export function ResumePreview({ data }: Props) {
@@ -47,7 +56,7 @@ export function ResumePreview({ data }: Props) {
               <div className="flex justify-between items-baseline">
                 <span className="font-semibold text-gray-900">{job.title}</span>
                 <span className="text-xs text-gray-400">
-                  {formatDate(job.startDate)} – {formatDate(job.endDate)}
+                  {dateRange(job.startDate, job.endDate)}
                 </span>
               </div>
               <p className="text-xs text-gray-500 mb-1">
@@ -74,7 +83,7 @@ export function ResumePreview({ data }: Props) {
               <div className="flex justify-between items-baseline">
                 <span className="font-semibold text-gray-900">{edu.school}</span>
                 <span className="text-xs text-gray-400">
-                  {formatDate(edu.startDate)} – {formatDate(edu.endDate)}
+                  {dateRange(edu.startDate, edu.endDate)}
                 </span>
               </div>
               <p className="text-xs text-gray-500">

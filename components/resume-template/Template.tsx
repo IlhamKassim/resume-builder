@@ -64,13 +64,21 @@ const styles = StyleSheet.create({
   summaryText: { fontSize: 9.5, color: COLORS.dark, lineHeight: 1.5 },
 });
 
-function formatDate(date: string | null): string {
-  if (!date) return "Present";
-  // Handle "2023-09" → "Sep 2023"
+function formatDate(date: string | null | undefined): string {
+  if (date === null || date === undefined) return "Present";
+  if (!date) return "";
   const [year, month] = date.split("-");
   if (!month) return year;
   const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   return `${months[parseInt(month, 10) - 1]} ${year}`;
+}
+
+function DateRange({ start, end }: { start: string; end: string | null }) {
+  const s = formatDate(start);
+  const e = formatDate(end);
+  if (!s && !e) return null;
+  if (!s) return <Text style={styles.entryDate}>{e}</Text>;
+  return <Text style={styles.entryDate}>{s} – {e}</Text>;
 }
 
 function ContactSection({ contact }: { contact: ResumeData["contact"] }) {
@@ -115,9 +123,7 @@ function ExperienceSection({ experience }: { experience: ResumeData["experience"
         <View key={i} style={{ marginBottom: 8 }}>
           <View style={styles.entryHeader}>
             <Text style={styles.entryTitle}>{job.title}</Text>
-            <Text style={styles.entryDate}>
-              {formatDate(job.startDate)} – {formatDate(job.endDate)}
-            </Text>
+            <DateRange start={job.startDate} end={job.endDate} />
           </View>
           <Text style={styles.entrySubtitle}>
             {job.company}{job.location ? `  ·  ${job.location}` : ""}
@@ -142,9 +148,7 @@ function EducationSection({ education }: { education: ResumeData["education"] })
         <View key={i} style={{ marginBottom: 4 }}>
           <View style={styles.entryHeader}>
             <Text style={styles.entryTitle}>{edu.school}</Text>
-            <Text style={styles.entryDate}>
-              {formatDate(edu.startDate)} – {formatDate(edu.endDate)}
-            </Text>
+            <DateRange start={edu.startDate} end={edu.endDate} />
           </View>
           <Text style={styles.entrySubtitle}>
             {edu.degree}{edu.field ? `, ${edu.field}` : ""}
@@ -159,14 +163,7 @@ function SkillsSection({ skills }: { skills: string[] }) {
   return (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>Skills</Text>
-      <View style={styles.skillsRow}>
-        {skills.map((skill, i) => (
-          <View key={i} style={{ flexDirection: "row", gap: 5 }}>
-            {i > 0 && <Text style={styles.skillSep}>·</Text>}
-            <Text style={styles.skill}>{skill}</Text>
-          </View>
-        ))}
-      </View>
+      <Text style={styles.skill}>{skills.join("  ·  ")}</Text>
     </View>
   );
 }
@@ -177,14 +174,14 @@ function ProjectsSection({ projects }: { projects: ResumeData["projects"] }) {
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>Projects</Text>
       {projects.map((project, i) => (
-        <View key={i} style={{ marginBottom: 5 }}>
+        <View key={i} style={{ marginBottom: 6 }}>
           <View style={styles.entryHeader}>
             <Text style={styles.entryTitle}>{project.name}</Text>
             {project.url && <Text style={styles.entryDate}>{project.url}</Text>}
           </View>
-          <Text style={styles.bulletText}>{project.description}</Text>
+          <Text style={{ ...styles.bulletText, marginTop: 2 }}>{project.description}</Text>
           {project.technologies && project.technologies.length > 0 && (
-            <Text style={styles.entrySubtitle}>
+            <Text style={{ ...styles.entrySubtitle, marginTop: 3 }}>
               {project.technologies.join(" · ")}
             </Text>
           )}

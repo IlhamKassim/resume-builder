@@ -12,10 +12,11 @@ export const profileFixture: ProfileData = {
       title: "Technical Operations Assistant",
       startDate: "2023-09",
       endDate: null,
-      location: "State College, PA",
+      location: "State College, Pennsylvania, United States",
       bullets: [
-        "Managed technical infrastructure for university operations",
-        "Collaborated with cross-functional teams to deliver solutions",
+        "Supported technical operations at the university, applying engineering and problem-solving skills to address real-world system needs",
+        "Experimented with AI-driven truth-checking tools, demonstrating initiative in software development and applied AI research",
+        "Collaborated within cross-functional university environments, contributing technical insight to projects with community impact",
       ],
     },
   ],
@@ -29,16 +30,19 @@ export const profileFixture: ProfileData = {
     },
   ],
   skills: [
+    "Python Programming",
     "Data Structures & Algorithms",
     "AI & Systems Programming",
-    "Python",
+    "Problem-Solving & Analytical Thinking",
+    "Technical Documentation",
+    "Team Collaboration & Communication",
     "C++",
-    "Leadership",
   ],
   projects: [
     {
-      name: "Truth-Checking Tool",
-      description: "Experimented with automated fact-checking tools with real-world impact",
+      name: "AI Truth-Checking Tool",
+      description: "Experimented with building a truth-checking tool leveraging AI techniques, focused on solving a real-world information verification problem and demonstrating applied software development skills",
+      technologies: ["AI", "Python"],
     },
   ],
   contact: {
