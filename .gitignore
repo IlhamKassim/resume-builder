@@ -42,3 +42,4 @@ next-env.d.ts
 
 # agent-skills plugin (separate repo, not part of this project)
 agent-skills/
+Profile.csv
