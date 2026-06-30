@@ -52,7 +52,7 @@ export function ResumePreview({ data }: Props) {
 
   return (
     // Mirrors PDF: 10pt body, 54px H margins, 36px V margins, 1.1 line-height
-    <div className="bg-white text-[#1a1a1a] px-[54px] py-[36px] max-w-[794px] mx-auto shadow-sm border border-gray-100 font-sans text-[10pt] leading-[1.1]">
+    <div className="bg-white text-[#1a1a1a] px-[54px] py-[36px] max-w-[794px] mx-auto shadow-sm border border-gray-100 font-sans text-[10pt] leading-[1.1] print:shadow-none print:border-none print:max-w-none print:mx-0">
 
       {/* Header — name centered 14pt, contact 3-column */}
       <div className="mb-[6px]">
