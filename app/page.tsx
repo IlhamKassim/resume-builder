@@ -2,19 +2,16 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ProfileInput } from "@/components/ProfileInput";
 import { JobDescriptionInput } from "@/components/JobDescriptionInput";
-import type { ProfileData } from "@/lib/types";
+import myProfile from "@/lib/my-profile";
 
 export default function Home() {
-  const [profile, setProfile] = useState<ProfileData | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastJobDescription, setLastJobDescription] = useState<string | null>(null);
   const router = useRouter();
 
   async function handleGenerate(jobDescription: string) {
-    if (!profile) return;
     setIsGenerating(true);
     setError(null);
     setLastJobDescription(jobDescription);
@@ -23,7 +20,7 @@ export default function Home() {
       const res = await fetch("/api/tailor", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ profile, jobDescription }),
+        body: JSON.stringify({ profile: myProfile, jobDescription }),
       });
       const data = await res.json();
 
@@ -47,42 +44,15 @@ export default function Home() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Resume Builder</h1>
           <p className="mt-1 text-gray-500">
-            Tailored resumes in seconds — no manual editing required.
+            Paste a job description and get a tailored resume in seconds.
           </p>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-6">
-          <div>
-            <div className="flex items-center gap-2 mb-4">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-900 text-xs font-medium text-white">
-                1
-              </span>
-              <span className="text-sm font-medium text-gray-700">Load your profile</span>
-            </div>
-            <ProfileInput
-              onProfile={(p) => {
-                setProfile(p);
-                sessionStorage.setItem("profileData", JSON.stringify(p));
-              }}
-            />
-          </div>
-
-          {profile && (
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-900 text-xs font-medium text-white">
-                  2
-                </span>
-                <span className="text-sm font-medium text-gray-700">
-                  Paste the job description
-                </span>
-              </div>
-              <JobDescriptionInput
-                onGenerate={handleGenerate}
-                isGenerating={isGenerating}
-              />
-            </div>
-          )}
+        <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
+          <JobDescriptionInput
+            onGenerate={handleGenerate}
+            isGenerating={isGenerating}
+          />
 
           {error && (
             <div className="rounded-md bg-red-50 border border-red-200 p-3 flex items-start justify-between gap-3">
