@@ -34,7 +34,7 @@ export default function PreviewPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 print:bg-white">
+    <div className="min-h-screen bg-gray-50 print:bg-white print:min-h-0">
       {/* Toolbar — hidden when printing */}
       <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 py-3 print:hidden">
         <div className="max-w-[760px] mx-auto flex items-center justify-between">
