@@ -1,8 +1,13 @@
 import { describe, it, expect } from "vitest";
 import { renderToBuffer } from "@react-pdf/renderer";
-import { createElement } from "react";
+import { createElement, type ReactElement } from "react";
+import type { DocumentProps } from "@react-pdf/renderer";
 import type { ResumeData } from "@/lib/types";
 import { ResumeTemplate } from "@/components/resume-template/Template";
+
+function render(data: ResumeData) {
+  return renderToBuffer(createElement(ResumeTemplate, { data }) as ReactElement<DocumentProps>);
+}
 
 const fullResume: ResumeData = {
   contact: {
@@ -22,8 +27,8 @@ const fullResume: ResumeData = {
       endDate: null,
       location: "State College, PA",
       bullets: [
-        "Managed technical infrastructure supporting university operations",
-        "Collaborated with cross-functional teams to deliver impactful solutions",
+        "Technical Support: Managed technical infrastructure supporting university operations.",
+        "Collaboration: Worked with cross-functional teams to deliver impactful solutions.",
       ],
     },
   ],
@@ -36,11 +41,17 @@ const fullResume: ResumeData = {
       endDate: "2025-05",
     },
   ],
-  skills: ["Data Structures & Algorithms", "Python", "C++", "AI & Systems Programming"],
+  skills: [
+    { category: "Languages", items: ["Python", "C++", "JavaScript"] },
+    { category: "Core CS", items: ["Data Structures & Algorithms", "AI & Systems Programming"] },
+  ],
   projects: [
     {
       name: "Truth-Checking Tool",
-      description: "Automated fact-checking tool with real-world impact",
+      role: "Developer",
+      bullets: [
+        "AI Integration: Built an automated fact-checking tool with real-world impact.",
+      ],
     },
   ],
 };
@@ -50,25 +61,21 @@ const noSummaryResume: ResumeData = { ...fullResume, summary: "x", projects: [] 
 
 describe("ResumeTemplate", () => {
   it("renders a non-empty PDF buffer for a full resume", async () => {
-    const buffer = await renderToBuffer(createElement(ResumeTemplate, { data: fullResume }));
+    const buffer = await render(fullResume);
     expect(buffer).toBeInstanceOf(Buffer);
     expect(buffer.length).toBeGreaterThan(1000);
   });
 
   it("renders without error when projects array is empty", async () => {
-    await expect(
-      renderToBuffer(createElement(ResumeTemplate, { data: noProjectsResume }))
-    ).resolves.toBeInstanceOf(Buffer);
+    await expect(render(noProjectsResume)).resolves.toBeInstanceOf(Buffer);
   });
 
   it("renders without error for minimal resume (no projects)", async () => {
-    await expect(
-      renderToBuffer(createElement(ResumeTemplate, { data: noSummaryResume }))
-    ).resolves.toBeInstanceOf(Buffer);
+    await expect(render(noSummaryResume)).resolves.toBeInstanceOf(Buffer);
   });
 
   it("produces a valid PDF (starts with PDF magic bytes)", async () => {
-    const buffer = await renderToBuffer(createElement(ResumeTemplate, { data: fullResume }));
+    const buffer = await render(fullResume);
     const header = buffer.slice(0, 4).toString("ascii");
     expect(header).toBe("%PDF");
   });

@@ -12,6 +12,11 @@ CRITICAL RULES — you must follow these without exception:
 1. Only use information explicitly present in the provided profile data. Never invent, embellish, or infer any experience, skills, achievements, or responsibilities not present in the profile.
 2. You may rephrase and reorder existing information to highlight relevance, but every fact must trace back to the source profile.
 3. Return ONLY a valid JSON object matching the schema below — no markdown, no explanation, no code fences.
+4. The entire resume MUST fit on ONE PAGE. Select only the 3 most relevant experience entries and 2 most relevant projects. Include exactly 2–3 bullets per experience entry and 2 bullets per project. Show only the 2 most recent education entries. Keep the summary to 2 sentences maximum.
+
+BULLET FORMAT: Every bullet point (in both experience and projects) must follow the pattern "Label: description" where the label is a 2–4 word thematic category in title case (e.g. "AI & Business Intelligence:", "Technical Operations:"), followed by a colon and space, then a concise one-line description starting with a strong action verb. Avoid filler phrases like "responsible for" or "helped with".
+
+SKILLS FORMAT: Group skills into 3–5 meaningful categories (e.g. Languages, Frameworks, Systems, AI & ML, Tools). Only include skills relevant to this specific job description. Mirror exact terminology from the job posting where applicable.
 
 OUTPUT SCHEMA:
 {
@@ -24,7 +29,7 @@ OUTPUT SCHEMA:
     "github": "string (optional)",
     "website": "string (optional)"
   },
-  "summary": "string (2-3 sentences, tailored to the role, required)",
+  "summary": "string (2 sentences max, tailored to the role, required)",
   "experience": [
     {
       "company": "string",
@@ -32,7 +37,7 @@ OUTPUT SCHEMA:
       "startDate": "string",
       "endDate": "string | null (null means current role)",
       "location": "string (optional)",
-      "bullets": ["string (action-verb led, quantified where data exists)"]
+      "bullets": ["string — exactly 2–3 bullets, each formatted as 'Label: description'"]
     }
   ],
   "education": [
@@ -44,11 +49,17 @@ OUTPUT SCHEMA:
       "endDate": "string"
     }
   ],
-  "skills": ["string (only skills relevant to this job description)"],
+  "skills": [
+    {
+      "category": "string (e.g. 'Languages', 'Frameworks', 'AI & ML', 'Tools')",
+      "items": ["string"]
+    }
+  ],
   "projects": [
     {
       "name": "string",
-      "description": "string",
+      "role": "string (your capacity, e.g. 'Lead Developer') (optional)",
+      "bullets": ["string — exactly 2 bullets, each formatted as 'Label: description'"],
       "url": "string (optional)",
       "technologies": ["string (optional)"]
     }

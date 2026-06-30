@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+const SkillCategorySchema = z.object({
+  category: z.string().min(1),
+  items: z.array(z.string()),
+});
+
 const ExperienceSchema = z.object({
   company: z.string().min(1),
   title: z.string().min(1),
@@ -20,7 +25,9 @@ const EducationSchema = z.object({
 
 const ProjectSchema = z.object({
   name: z.string().min(1),
-  description: z.string().min(1),
+  role: z.string().optional(),
+  description: z.string().optional(),
+  bullets: z.array(z.string()).default([]),
   url: z.string().url().optional(),
   technologies: z.array(z.string()).optional(),
 });
@@ -51,7 +58,7 @@ export const ResumeDataSchema = z.object({
   summary: z.string().min(1),
   experience: z.array(ExperienceSchema).min(1),
   education: z.array(EducationSchema),
-  skills: z.array(z.string()),
+  skills: z.array(SkillCategorySchema),
   projects: z.array(ProjectSchema),
 });
 
@@ -63,6 +70,7 @@ export const TailorRequestSchema = z.object({
 export type Experience = z.infer<typeof ExperienceSchema>;
 export type Education = z.infer<typeof EducationSchema>;
 export type Project = z.infer<typeof ProjectSchema>;
+export type SkillCategory = z.infer<typeof SkillCategorySchema>;
 export type Contact = z.infer<typeof ContactSchema>;
 export type ProfileData = z.infer<typeof ProfileDataSchema>;
 export type ResumeData = z.infer<typeof ResumeDataSchema>;

@@ -161,33 +161,55 @@ export const profileFixture: ProfileData = {
   projects: [
     {
       name: "Reber Building Virtual Tour (Kinetic Engineering Collective)",
-      description: "Lead Developer for a web-based interactive showcase and 360° virtual tour of the redesigned Mechanical Engineering hallway at Penn State. Features a Penn State-branded SPA dashboard, Pannellum-powered multi-scene panoramic viewer, and an animated budget tracker. Built as a Capstone project.",
+      role: "Lead Developer",
+      bullets: [
+        "Digital Transformation: Engineered a web-based interactive showcase and 360° virtual tour of Penn State's redesigned Mechanical Engineering hallway, solving physical exhibition space limitations for institutional stakeholders.",
+        "Immersive Experience Architecture: Integrated Pannellum-powered multi-scene panoramic viewer with an animated budget tracker inside a Penn State-branded SPA dashboard, built as a Capstone project.",
+      ],
       technologies: ["JavaScript", "HTML5", "CSS", "Pannellum", "Single Page Applications"],
     },
     {
       name: "Personal Portfolio Website",
-      description: "Modern, responsive personal portfolio built with Next.js 14 App Router, TypeScript, and Tailwind CSS. Features dark mode, Framer Motion animations, and responsive design.",
+      role: "Full-Stack Developer",
+      bullets: [
+        "Full-Stack Web Development: Built a modern, responsive portfolio using Next.js 14 App Router, TypeScript, and Tailwind CSS, featuring dark mode and full responsive design.",
+        "Interactive UI Design: Integrated Framer Motion animations to deliver smooth, engaging user experiences across all device sizes.",
+      ],
       url: "https://ilham-portfolio-yl2x.vercel.app/",
       technologies: ["Next.js", "TypeScript", "Tailwind CSS", "Framer Motion"],
     },
     {
       name: "Social Nutrition Label",
-      description: "A Chrome Extension that displays a 'Nutrition Label' for social media posts, using the Gemini API to analyze post credibility, factual alignment, and visual integrity to combat misinformation.",
+      role: "Developer & Designer",
+      bullets: [
+        "AI-Powered Fact-Checking: Developed a Chrome Extension using the Gemini API to display a 'Nutrition Label' for social media posts, analyzing post credibility, factual alignment, and visual integrity to combat misinformation.",
+        "Search & Verification Integration: Leveraged the Google Search API to cross-reference post content and provide real-time misinformation scoring directly in the browser.",
+      ],
       url: "https://github.com/IlhamKassim/laila-coders",
-      technologies: ["Gemini API", "Google Search API", "JavaScript", "Chrome Extension", "Front-End Development"],
+      technologies: ["Gemini API", "Google Search API", "JavaScript", "Chrome Extension"],
     },
     {
       name: "Shariah Algo Trader",
-      description: "Algorithmic trading bot operating within a Shariah-compliant equity universe, taking long-only spot positions with no leverage, margin, derivatives, or options. Holds top-20 stocks by Factor Score using equal-weighted Momentum and Quality Factor z-scores.",
-      technologies: ["Python", "Quantitative Investing", "Data Analysis"],
+      role: "Independent Fintech Developer",
+      bullets: [
+        "Algorithmic Strategy Design: Engineered a quantitative trading bot operating within a Shariah-compliant equity universe, taking long-only spot positions using equal-weighted Momentum and Quality Factor z-scores.",
+        "Data Strategy & Risk Execution: Applied statistical modeling with Pandas and Scikit-Learn to execute trade signals and monitor portfolio risk parameters on a 100,000 USD paper portfolio.",
+      ],
+      technologies: ["Python", "Pandas", "Scikit-Learn", "Quantitative Investing"],
     },
     {
       name: "Thread Scheduler – Operating Systems",
-      description: "Implemented a multithreaded CPU thread scheduler supporting FCFS, SRTF, and MLFQ scheduling policies using pthreads, replicating a real-life CPU. Managed CPU and IO operations with accurate timing to generate Gantt chart outputs for thread execution.",
+      role: "Systems Developer",
+      bullets: [
+        "Systems Programming: Implemented a multithreaded CPU thread scheduler supporting FCFS, SRTF, and MLFQ scheduling policies using pthreads in C++, replicating real-life CPU behavior.",
+        "Performance Analysis: Managed CPU and IO operations with accurate timing to generate Gantt chart outputs for thread execution visualization.",
+      ],
       technologies: ["C++", "Multithreading", "Pthreads", "Operating Systems", "Process Scheduling"],
     },
   ],
   contact: {
+    email: "ilhamkassim2003@gmail.com",
+    phone: "+60 17-528 4805",
     website: "https://ilham-portfolio-yl2x.vercel.app/",
     linkedin: "https://www.linkedin.com/in/ilhamkassim",
   },
