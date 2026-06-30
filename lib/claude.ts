@@ -102,10 +102,15 @@ async function callWithRetry(
   throw lastErr;
 }
 
+export interface TokenUsage {
+  inputTokens: number;
+  outputTokens: number;
+}
+
 export async function tailorResume(
   profile: ProfileData,
   jobDescription: string
-): Promise<ResumeData> {
+): Promise<{ resume: ResumeData; usage: TokenUsage }> {
   const userMessage = `PROFILE DATA:
 ${JSON.stringify(profile, null, 2)}
 
@@ -171,5 +176,11 @@ Tailor the resume to this job description. Remember: only use facts from the pro
     );
   }
 
-  return validated.data;
+  return {
+    resume: validated.data,
+    usage: {
+      inputTokens: response.usage.input_tokens,
+      outputTokens: response.usage.output_tokens,
+    },
+  };
 }

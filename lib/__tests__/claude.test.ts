@@ -67,18 +67,22 @@ describe("tailorResume", () => {
   it("returns a valid ResumeData object when Claude responds correctly", async () => {
     mockCreate.mockResolvedValueOnce({
       content: [{ type: "text", text: JSON.stringify(validResumeOutput) }],
+      usage: { input_tokens: 100, output_tokens: 50 },
     });
 
     const { tailorResume } = await import("../claude");
-    const result = await tailorResume(profileFixture, jobDescriptionFixture);
+    const { resume, usage } = await tailorResume(profileFixture, jobDescriptionFixture);
 
-    expect(ResumeDataSchema.safeParse(result).success).toBe(true);
-    expect(result.contact.name).toBe("Mohammad Ilham bin Kassim");
+    expect(ResumeDataSchema.safeParse(resume).success).toBe(true);
+    expect(resume.contact.name).toBe("Mohammad Ilham bin Kassim");
+    expect(usage.inputTokens).toBe(100);
+    expect(usage.outputTokens).toBe(50);
   });
 
   it("passes profile data and job description to Claude", async () => {
     mockCreate.mockResolvedValueOnce({
       content: [{ type: "text", text: JSON.stringify(validResumeOutput) }],
+      usage: { input_tokens: 100, output_tokens: 50 },
     });
 
     const { tailorResume } = await import("../claude");
@@ -121,11 +125,12 @@ describe("tailorResume", () => {
       .mockRejectedValueOnce(new Anthropic.RateLimitError(429, undefined, "rate limited", new Headers()))
       .mockResolvedValueOnce({
         content: [{ type: "text", text: JSON.stringify(validResumeOutput) }],
+        usage: { input_tokens: 100, output_tokens: 50 },
       });
 
     const { tailorResume } = await import("../claude");
-    const result = await tailorResume(profileFixture, jobDescriptionFixture);
-    expect(result.contact.name).toBe("Mohammad Ilham bin Kassim");
+    const { resume } = await tailorResume(profileFixture, jobDescriptionFixture);
+    expect(resume.contact.name).toBe("Mohammad Ilham bin Kassim");
     expect(mockCreate).toHaveBeenCalledTimes(2);
   });
 
@@ -150,6 +155,7 @@ describe("tailorResume", () => {
   it("includes a no-hallucination instruction in the system prompt", async () => {
     mockCreate.mockResolvedValueOnce({
       content: [{ type: "text", text: JSON.stringify(validResumeOutput) }],
+      usage: { input_tokens: 100, output_tokens: 50 },
     });
 
     const { tailorResume } = await import("../claude");
