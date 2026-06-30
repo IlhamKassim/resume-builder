@@ -4,6 +4,7 @@ import type { ProfileData, ResumeData } from "@/lib/types";
 
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
+  timeout: 55_000,
 });
 
 const SYSTEM_PROMPT = `You are a professional resume writer. Your task is to tailor a resume to a specific job description.
@@ -73,6 +74,34 @@ export class TailoringError extends Error {
   }
 }
 
+function isRetryable(err: unknown): boolean {
+  return (
+    err instanceof Anthropic.RateLimitError ||
+    err instanceof Anthropic.APIConnectionError ||
+    err instanceof Anthropic.InternalServerError
+  );
+}
+
+async function callWithRetry(
+  fn: () => Promise<Anthropic.Message>,
+  maxRetries = 2
+): Promise<Anthropic.Message> {
+  let lastErr: unknown;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      if (isRetryable(err) && attempt < maxRetries) {
+        lastErr = err;
+        await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
+        continue;
+      }
+      throw err;
+    }
+  }
+  throw lastErr;
+}
+
 export async function tailorResume(
   profile: ProfileData,
   jobDescription: string
@@ -85,12 +114,34 @@ ${jobDescription}
 
 Tailor the resume to this job description. Remember: only use facts from the profile data above.`;
 
-  const response = await client.messages.create({
-    model: "claude-sonnet-4-6",
-    max_tokens: 4096,
-    system: SYSTEM_PROMPT,
-    messages: [{ role: "user", content: userMessage }],
-  });
+  let response: Anthropic.Message;
+  try {
+    response = await callWithRetry(() =>
+      client.messages.create({
+        model: "claude-sonnet-4-6",
+        max_tokens: 4096,
+        system: SYSTEM_PROMPT,
+        messages: [{ role: "user", content: userMessage }],
+      })
+    );
+  } catch (err) {
+    if (err instanceof Anthropic.RateLimitError) {
+      throw new TailoringError(
+        "Resume generation failed — API rate limit reached. Please try again in a moment."
+      );
+    }
+    if (err instanceof Anthropic.APIConnectionTimeoutError) {
+      throw new TailoringError(
+        "Resume generation failed — request timed out. Please try again."
+      );
+    }
+    if (err instanceof Anthropic.APIConnectionError) {
+      throw new TailoringError(
+        "Resume generation failed — could not reach the AI service. Please check your connection and try again."
+      );
+    }
+    throw err;
+  }
 
   const textBlock = response.content.find((block) => block.type === "text");
   if (!textBlock || textBlock.type !== "text") {

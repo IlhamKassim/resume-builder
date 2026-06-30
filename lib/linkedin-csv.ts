@@ -34,6 +34,8 @@ interface CSVFiles {
   positions?: string;
   education?: string;
   skills?: string;
+  projects?: string;
+  certifications?: string;
 }
 
 export function parseLinkedInCSV(files: CSVFiles): ProfileData {
@@ -78,6 +80,21 @@ export function parseLinkedInCSV(files: CSVFiles): ProfileData {
   const skillRows = files.skills ? parseCSV(files.skills) : [];
   const skills = skillRows.map((r) => r["Name"]).filter(Boolean);
 
+  // Projects.csv
+  const projectRows = files.projects ? parseCSV(files.projects) : [];
+  const projects: ProfileData["projects"] = projectRows
+    .filter((r) => r["Title"])
+    .map((r) => ({
+      name: r["Title"] ?? "",
+      description: r["Description"] || undefined,
+      url: r["Url"] || undefined,
+      bullets: [],
+    }));
+
+  // Certifications.csv
+  const certRows = files.certifications ? parseCSV(files.certifications) : [];
+  const certifications = certRows.map((r) => r["Name"]).filter(Boolean);
+
   // Extract LinkedIn slug from profile URL field if available
   const linkedinSlug = p["Profile URL"]?.match(/linkedin\.com\/in\/([^/]+)/)?.[1] ?? "";
   const linkedinUrl = linkedinSlug
@@ -98,7 +115,8 @@ export function parseLinkedInCSV(files: CSVFiles): ProfileData {
     }],
     education,
     skills,
-    projects: [],
+    projects,
+    certifications: certifications.length > 0 ? certifications : undefined,
     contact: {
       website: website || undefined,
       linkedin: linkedinUrl,

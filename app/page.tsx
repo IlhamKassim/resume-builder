@@ -10,12 +10,14 @@ export default function Home() {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lastJobDescription, setLastJobDescription] = useState<string | null>(null);
   const router = useRouter();
 
   async function handleGenerate(jobDescription: string) {
     if (!profile) return;
     setIsGenerating(true);
     setError(null);
+    setLastJobDescription(jobDescription);
 
     try {
       const res = await fetch("/api/tailor", {
@@ -83,8 +85,17 @@ export default function Home() {
           )}
 
           {error && (
-            <div className="rounded-md bg-red-50 border border-red-200 p-3">
+            <div className="rounded-md bg-red-50 border border-red-200 p-3 flex items-start justify-between gap-3">
               <p className="text-sm text-red-700">{error}</p>
+              {lastJobDescription && (
+                <button
+                  onClick={() => handleGenerate(lastJobDescription)}
+                  disabled={isGenerating}
+                  className="shrink-0 text-sm font-medium text-red-700 underline underline-offset-2 disabled:opacity-50"
+                >
+                  Try again
+                </button>
+              )}
             </div>
           )}
         </div>

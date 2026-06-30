@@ -54,7 +54,7 @@ const validResumeData = {
   summary: "Tailored summary for the role.",
   experience: [validExperience],
   education: [validEducation],
-  skills: ["TypeScript", "React"],
+  skills: [{ category: "Languages", items: ["TypeScript", "React"] }],
   projects: [
     {
       name: "My App",

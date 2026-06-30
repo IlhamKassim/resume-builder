@@ -4,11 +4,16 @@ import { profileFixture, jobDescriptionFixture } from "@/lib/__tests__/fixtures/
 
 const mockCreate = vi.fn();
 
-vi.mock("@anthropic-ai/sdk", () => {
+vi.mock("@anthropic-ai/sdk", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@anthropic-ai/sdk")>();
   class MockAnthropic {
     messages = { create: mockCreate };
+    static RateLimitError = actual.default.RateLimitError;
+    static APIConnectionError = actual.default.APIConnectionError;
+    static APIConnectionTimeoutError = actual.default.APIConnectionTimeoutError;
+    static InternalServerError = actual.default.InternalServerError;
   }
-  return { default: MockAnthropic };
+  return { ...actual, default: MockAnthropic };
 });
 
 const validResumeOutput = {
@@ -42,7 +47,10 @@ const validResumeOutput = {
       endDate: "2025-05",
     },
   ],
-  skills: ["Data Structures & Algorithms", "AI & Systems Programming", "Python", "C++"],
+  skills: [
+    { category: "Languages", items: ["Python", "C++"] },
+    { category: "CS Fundamentals", items: ["Data Structures & Algorithms", "AI & Systems Programming"] },
+  ],
   projects: [
     {
       name: "Truth-Checking Tool",
@@ -105,6 +113,38 @@ describe("tailorResume", () => {
 
     const { tailorResume } = await import("../claude");
     await expect(tailorResume(profileFixture, jobDescriptionFixture)).rejects.toThrow();
+  });
+
+  it("retries on rate limit and succeeds on second attempt", async () => {
+    const { default: Anthropic } = await import("@anthropic-ai/sdk");
+    mockCreate
+      .mockRejectedValueOnce(new Anthropic.RateLimitError(429, undefined, "rate limited", new Headers()))
+      .mockResolvedValueOnce({
+        content: [{ type: "text", text: JSON.stringify(validResumeOutput) }],
+      });
+
+    const { tailorResume } = await import("../claude");
+    const result = await tailorResume(profileFixture, jobDescriptionFixture);
+    expect(result.contact.name).toBe("Mohammad Ilham bin Kassim");
+    expect(mockCreate).toHaveBeenCalledTimes(2);
+  });
+
+  it("throws TailoringError after exhausting retries on rate limit", async () => {
+    const { default: Anthropic } = await import("@anthropic-ai/sdk");
+    mockCreate.mockRejectedValue(
+      new Anthropic.RateLimitError(429, undefined, "rate limited", new Headers())
+    );
+
+    const { tailorResume, TailoringError } = await import("../claude");
+    await expect(tailorResume(profileFixture, jobDescriptionFixture)).rejects.toThrow(TailoringError);
+  });
+
+  it("throws TailoringError on timeout", async () => {
+    const { default: Anthropic } = await import("@anthropic-ai/sdk");
+    mockCreate.mockRejectedValue(new Anthropic.APIConnectionTimeoutError());
+
+    const { tailorResume, TailoringError } = await import("../claude");
+    await expect(tailorResume(profileFixture, jobDescriptionFixture)).rejects.toThrow(TailoringError);
   });
 
   it("includes a no-hallucination instruction in the system prompt", async () => {

@@ -50,6 +50,7 @@ export const ProfileDataSchema = z.object({
   education: z.array(EducationSchema),
   skills: z.array(z.string()),
   projects: z.array(ProjectSchema),
+  certifications: z.array(z.string()).optional(),
   contact: ContactSchema,
 });
 

@@ -10,7 +10,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "No files uploaded." }, { status: 400 });
   }
 
-  const csvMap: { profile?: string; positions?: string; education?: string; skills?: string } = {};
+  const csvMap: {
+    profile?: string;
+    positions?: string;
+    education?: string;
+    skills?: string;
+    projects?: string;
+    certifications?: string;
+  } = {};
 
   for (const file of files) {
     const text = await file.text();
@@ -19,6 +26,8 @@ export async function POST(req: NextRequest) {
     else if (name.includes("position")) csvMap.positions = text;
     else if (name.includes("education")) csvMap.education = text;
     else if (name.includes("skill")) csvMap.skills = text;
+    else if (name.includes("project")) csvMap.projects = text;
+    else if (name.includes("certification")) csvMap.certifications = text;
   }
 
   if (!csvMap.profile) {
