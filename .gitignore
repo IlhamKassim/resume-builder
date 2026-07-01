@@ -43,3 +43,9 @@ next-env.d.ts
 # agent-skills plugin (separate repo, not part of this project)
 agent-skills/
 Profile.csv
+
+# LinkedIn data exports (contain personal data)
+Basic_LinkedInDataExport_*/
+
+# Generated PDF output
+*.pdf
