@@ -15,10 +15,10 @@ const myProfile: ProfileData = {
       endDate: null,
       location: "State College, Pennsylvania, United States",
       bullets: [
-        "Evaluated the application of generative AI, predictive modeling, and intelligent prospect research to accelerate Penn State's fundraising and engagement goals, delivering briefs and pilot-project roadmaps",
-        "Spearheaded the recruitment lifecycle for incoming intern cohorts and managed the DDAR Internship website to drive candidate engagement",
-        "Conducted comprehensive data analysis of historical recruitment patterns, providing strategic insights to optimize future talent acquisition",
-        "Curated and updated a multi-year database of DDAR internship alumni to measure program impact and supply hiring managers with direct talent pipelines",
+        "Evaluated generative AI, predictive modeling, and intelligent prospect research tools to accelerate Penn State's fundraising goals, delivering pilot-project roadmaps to Division leaders",
+        "Validated AWA-to-Salesforce CRM migration for Division leadership, auditing data integrity to ensure no high-value prospect records were lost during transition",
+        "Screened 100+ applicants and interviewed 15 candidates to select the 2026 intern cohort, managing the full recruitment lifecycle and DDAR Internship website",
+        "Maintained and updated a 200-alumni internship database to measure program impact and supply hiring managers with direct talent pipelines",
       ],
     },
     {
@@ -28,11 +28,9 @@ const myProfile: ProfileData = {
       endDate: "2026-05",
       location: "State College, Pennsylvania, United States",
       bullets: [
-        "Facilitated seamless delivery of online Executive Education Programs by managing technical operations during live sessions",
-        "Configured and managed virtual breakout rooms using Zoom and Microsoft Teams to ensure high-quality, interactive participant experiences",
-        "Provided real-time technical support to presenters and participants, assisting with materials and resolving software issues promptly",
-        "Coordinated program logistics including attendance monitoring, session recording, and material distribution",
-        "Leveraged Office 365, Zoom, and Teams to support collaborative and inclusive virtual learning environments",
+        "Managed technical operations for 6+ live executive education sessions per week, supporting 20 senior leaders per session from public and private sector organizations across supply chain, logistics, and business disciplines",
+        "Configured virtual breakout rooms and resolved software issues in real time using Zoom and Microsoft Teams to ensure uninterrupted delivery",
+        "Coordinated session logistics including attendance monitoring, recording, and material distribution across all weekly programs",
       ],
     },
     {
@@ -76,9 +74,9 @@ const myProfile: ProfileData = {
       endDate: "2024-08",
       location: "Pennsylvania, United States",
       bullets: [
-        "Led a team of 20+ members to ensure smooth operations and strong organizational structure for the 150-member organization",
-        "Planned and coordinated major cultural events including the Independence Day Celebration, Game Night, and Malaysian Cultural Night",
-        "Spearheaded external outreach, building strategic connections with other university clubs and organizations to facilitate collaborative activities",
+        "Led a 20+ member executive team managing a 150-member organization with a $5,000–$10,000 annual events budget",
+        "Planned and executed cultural events drawing 150–200 attendees, including Independence Day Celebration, Game Night, and Malaysian Cultural Night",
+        "Built partnerships with 20+ university clubs and organizations to drive cross-cultural collaborative programming",
       ],
     },
     {
@@ -88,9 +86,8 @@ const myProfile: ProfileData = {
       endDate: "2024-07",
       location: "Malaysia (Remote)",
       bullets: [
-        "Participated in a rigorous social enterprise bootcamp featuring workshops and a two-week mentorship focused on startup development",
-        "Co-developed a marketplace platform concept to help local artisans from Borneo sell their products, earning 3rd place in the final pitch competition",
-        "Secured a paid mentorship opportunity with FutureLab based on the success of the startup pitch",
+        "Co-developed a marketplace platform for Borneo artisans, placing 3rd out of 20 competing teams in the final pitch competition",
+        "Secured a paid mentorship with FutureLab following the pitch, continuing product development through a structured two-week startup program",
       ],
     },
     {
@@ -172,8 +169,8 @@ const myProfile: ProfileData = {
       description:
         "Web-based interactive showcase and 360° virtual tour of the redesigned Mechanical Engineering hallway in the Reber Building at Penn State. Built as a Capstone project with a Penn State-branded SPA dashboard, Pannellum-powered multi-scene panoramic viewer, and an animated budget tracker.",
       bullets: [
-        "Digital Transformation: Engineered a web-based interactive showcase and 360° virtual tour of Penn State's redesigned Mechanical Engineering hallway, solving physical exhibition space limitations for institutional stakeholders.",
-        "Immersive Experience Architecture: Integrated Pannellum-powered multi-scene panoramic viewer with an animated budget tracker inside a Penn State-branded SPA dashboard.",
+        "Engineered a 360° virtual tour across 2 redesigned hallways with a Pannellum-powered multi-scene panoramic viewer, presented to 100+ institutional stakeholders",
+        "Built a Penn State-branded SPA dashboard integrating the panoramic tour with an animated budget tracker to replace physical exhibition space",
       ],
       technologies: ["JavaScript", "HTML5", "CSS", "Pannellum", "Single Page Applications"],
     },
@@ -195,8 +192,8 @@ const myProfile: ProfileData = {
       description:
         "A Chrome Extension 'Nutrition Label' for social media that uses the Gemini API to analyze post credibility, factual alignment, and visual integrity to combat misinformation.",
       bullets: [
-        "AI-Powered Fact-Checking: Developed a Chrome Extension using the Gemini API to display a 'Nutrition Label' for social media posts, analyzing post credibility, factual alignment, and visual integrity to combat misinformation.",
-        "Search & Verification Integration: Leveraged the Google Search API to cross-reference post content and provide real-time misinformation scoring directly in the browser.",
+        "Developed a Chrome Extension using the Gemini API to analyze social media post credibility, achieving 80% accuracy across 100 test posts",
+        "Leveraged the Google Search API to cross-reference post content and deliver real-time misinformation scoring directly in the browser",
       ],
       url: "https://github.com/IlhamKassim/laila-coders",
       technologies: ["Gemini API", "Google Search API", "JavaScript", "Chrome Extension"],
@@ -207,8 +204,8 @@ const myProfile: ProfileData = {
       description:
         "An algorithmic trading bot that operates exclusively within a Shariah-compliant equity universe, taking long-only spot positions with no leverage. Holds top-20 stocks by equal-weighted Momentum and Quality Factor z-scores drawn from the eligible universe of a Shariah-compliant ETF (SPUS).",
       bullets: [
-        "Algorithmic Strategy Design: Engineered a quantitative trading bot operating within a Shariah-compliant equity universe, taking long-only spot positions using equal-weighted Momentum and Quality Factor z-scores.",
-        "Data Strategy & Risk Execution: Applied statistical modeling with Pandas and Scikit-Learn to execute trade signals and monitor portfolio risk parameters on a 100,000 USD paper portfolio.",
+        "Engineered a quantitative trading bot on a $100K paper portfolio currently outperforming the S&P 500 by 2.5% and the SPUS ETF by 5% within the first week of live trading",
+        "Applied Momentum and Quality Factor z-scoring with Pandas and Scikit-Learn to rank and hold top-20 Shariah-compliant equities from the SPUS universe",
       ],
       technologies: ["Python", "Pandas", "Scikit-Learn", "Quantitative Investing"],
     },
@@ -229,8 +226,8 @@ const myProfile: ProfileData = {
       description:
         "Implemented a multithreaded CPU thread scheduler supporting FCFS, SRTF, and MLFQ scheduling policies using pthreads, replicating a real-life CPU. Managed CPU and IO operations with accurate timing to generate Gantt chart outputs.",
       bullets: [
-        "Systems Programming: Implemented a multithreaded CPU thread scheduler supporting FCFS, SRTF, and MLFQ scheduling policies using pthreads in C++, replicating real-life CPU behavior.",
-        "Performance Analysis: Managed CPU and IO operations with accurate timing to generate Gantt chart outputs for thread execution visualization.",
+        "Implemented a multithreaded CPU thread scheduler in C++ supporting FCFS, SRTF, and MLFQ scheduling policies using pthreads, achieving 0.2s execution time under stress testing",
+        "Generated Gantt chart outputs tracking CPU and IO operations with accurate timing for thread execution visualization and performance evaluation",
       ],
       technologies: ["C++", "Multithreading", "Pthreads", "Operating Systems", "Process Scheduling"],
     },
