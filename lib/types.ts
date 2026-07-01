@@ -10,8 +10,12 @@ const ExperienceSchema = z.object({
   title: z.string().min(1),
   startDate: z.string(),
   endDate: z.string().nullable(),
-  bullets: z.array(z.string()).min(2).max(3),
+  bullets: z.array(z.string()),
   location: z.string().optional(),
+});
+
+const ResumeExperienceSchema = ExperienceSchema.extend({
+  bullets: z.array(z.string()).min(2).max(3),
 });
 
 const EducationSchema = z.object({
@@ -57,7 +61,7 @@ export const ProfileDataSchema = z.object({
 export const ResumeDataSchema = z.object({
   contact: ContactSchema.extend({ name: z.string().min(1) }),
   summary: z.string().min(1),
-  experience: z.array(ExperienceSchema).min(1).max(3),
+  experience: z.array(ResumeExperienceSchema).min(1).max(3),
   education: z.array(EducationSchema),
   skills: z.array(SkillCategorySchema),
   projects: z.array(ProjectSchema),
