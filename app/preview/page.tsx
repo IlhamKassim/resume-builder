@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ResumePreview } from "@/components/ResumePreview";
@@ -9,7 +9,19 @@ import { ResumeDataSchema } from "@/lib/types";
 
 export default function PreviewPage() {
   const [resumeData, setResumeData] = useState<ResumeData | null>(null);
+  const resumeRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+
+  function handlePrint() {
+    const el = resumeRef.current;
+    const height = el ? el.scrollHeight : 0;
+    const width = el ? el.scrollWidth : 0;
+    const style = document.createElement("style");
+    style.textContent = `@media print { @page { size: ${width}px ${height}px; margin: 0; } }`;
+    document.head.appendChild(style);
+    window.print();
+    document.head.removeChild(style);
+  }
 
   useEffect(() => {
     const raw = sessionStorage.getItem("resumeData");
@@ -47,13 +59,13 @@ export default function PreviewPage() {
             </button>
             <span className="text-sm font-medium text-gray-900">Resume Preview</span>
           </div>
-          <Button onClick={() => window.print()}>Save as PDF</Button>
+          <Button onClick={handlePrint}>Save as PDF</Button>
         </div>
       </div>
 
       {/* Preview — remove wrapper padding when printing so resume fills the page */}
       <div className="py-8 px-4 print:p-0">
-        <ResumePreview data={resumeData} />
+        <ResumePreview data={resumeData} ref={resumeRef} />
       </div>
     </div>
   );
