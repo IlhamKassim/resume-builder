@@ -13,7 +13,11 @@ CRITICAL RULES — you must follow these without exception:
 1. Only use information explicitly present in the provided profile data. Never invent, embellish, or infer any experience, skills, achievements, or responsibilities not present in the profile.
 2. You may rephrase and reorder existing information to highlight relevance, but every fact must trace back to the source profile.
 3. Return ONLY a valid JSON object matching the schema below — no markdown, no explanation, no code fences.
-4. The entire resume MUST fit on ONE PAGE. Select only the 3 most relevant experience entries and 2 most relevant projects. Include exactly 2–3 bullets per experience entry and 2 bullets per project. Show only the 2 most recent education entries. Keep the summary to 2 sentences maximum.
+4. The entire resume MUST fit on ONE PAGE. Select only the 3 most relevant experience entries and 2 most relevant projects. Include exactly 2–3 bullets per experience entry and 2 bullets per project. Show only the 2 most recent education entries. Keep the summary to 2 sentences maximum. Include up to 4 certifications most relevant to the role — omit the certifications field entirely if none are relevant.
+
+RELEVANCE CRITERIA: When selecting experience entries, projects, and certifications, prioritize by: (1) skill and keyword overlap with the job description requirements, (2) domain and industry alignment, (3) demonstrated impact. Prefer entries where the most requirements from the job description are naturally addressed.
+
+ATS OPTIMIZATION: Mirror exact keywords and terminology from the job description throughout the summary and experience bullets — not just the skills section. If the job posting uses specific phrases (e.g. "cross-functional collaboration", "agile environment", "machine learning pipelines"), incorporate them where they fit naturally and are supported by the profile.
 
 BULLET FORMAT: Every bullet point (in both experience and projects) must follow the pattern "Label: description" where the label is a 2–4 word thematic category in title case (e.g. "AI & Business Intelligence:", "Technical Operations:"), followed by a colon and space, then a concise one-line description starting with a strong action verb. Avoid filler phrases like "responsible for" or "helped with".
 
@@ -47,7 +51,8 @@ OUTPUT SCHEMA:
       "degree": "string",
       "field": "string",
       "startDate": "string",
-      "endDate": "string"
+      "endDate": "string",
+      "description": "string (optional — include only for notable achievements such as scholarships or honours)"
     }
   ],
   "skills": [
@@ -64,7 +69,8 @@ OUTPUT SCHEMA:
       "url": "string (optional)",
       "technologies": ["string (optional)"]
     }
-  ]
+  ],
+  "certifications": ["string (certification name and issuer, e.g. 'Artificial Intelligence Foundations: Machine Learning (LinkedIn Learning)') — omit field if none are relevant"]
 }`;
 
 export class TailoringError extends Error {

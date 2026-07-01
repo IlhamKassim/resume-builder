@@ -137,6 +137,15 @@ export const ResumePreview = forwardRef<HTMLDivElement, Props>(function ResumePr
         </Section>
       )}
 
+      {/* Certifications */}
+      {data.certifications && data.certifications.length > 0 && (
+        <Section title="Certifications">
+          <p className="text-[10pt] leading-[1.3]">
+            {data.certifications.join("  ·  ")}
+          </p>
+        </Section>
+      )}
+
       {/* Projects */}
       {data.projects.length > 0 && (
         <Section title="Commercial & Technical Projects">

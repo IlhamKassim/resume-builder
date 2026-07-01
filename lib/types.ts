@@ -61,6 +61,7 @@ export const ResumeDataSchema = z.object({
   education: z.array(EducationSchema),
   skills: z.array(SkillCategorySchema),
   projects: z.array(ProjectSchema),
+  certifications: z.array(z.string()).optional(),
 });
 
 export const TailorRequestSchema = z.object({
