@@ -143,7 +143,7 @@ const myProfile: ProfileData = {
       startDate: "2021-06",
       endDate: "2022-06",
       description:
-        "College Preparation Program for Pre-University Students to the United States of America.",
+        "MARA Young Talent Programme (YTP) Scholar — competitively selected for government-funded placement at Penn State University. College Preparation Program for Pre-University Students to the United States of America.",
     },
     {
       school: "MARA Junior Science College (MRSM)",
