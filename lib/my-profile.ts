@@ -12,7 +12,7 @@ const myProfile: ProfileData = {
       company: "Penn State University – Division of Development and Alumni Relations",
       title: "DDAR Internship",
       startDate: "2025-04",
-      endDate: "2026-05",
+      endDate: null,
       location: "State College, Pennsylvania, United States",
       bullets: [
         "Evaluated the application of generative AI, predictive modeling, and intelligent prospect research to accelerate Penn State's fundraising and engagement goals, delivering briefs and pilot-project roadmaps",
@@ -24,7 +24,7 @@ const myProfile: ProfileData = {
     {
       company: "Penn State University – Smeal College of Business",
       title: "Online Program Moderator / Technical Assistant",
-      startDate: "2025-03",
+      startDate: "2025-02",
       endDate: "2026-05",
       location: "State College, Pennsylvania, United States",
       bullets: [
@@ -211,6 +211,17 @@ const myProfile: ProfileData = {
         "Data Strategy & Risk Execution: Applied statistical modeling with Pandas and Scikit-Learn to execute trade signals and monitor portfolio risk parameters on a 100,000 USD paper portfolio.",
       ],
       technologies: ["Python", "Pandas", "Scikit-Learn", "Quantitative Investing"],
+    },
+    {
+      name: "Computer Architecture Design Space Explorer",
+      role: "Systems Engineer",
+      description:
+        "A C++ simulation framework to automate Design Space Exploration (DSE) for processor microarchitecture, systematically evaluating processor and cache configurations to identify optimal hardware designs based on performance and power constraints.",
+      bullets: [
+        "Architecture Simulation: Engineered a heuristic search algorithm in C++ to navigate an 18-dimensional microarchitectural design space, evaluating up to 1,000 distinct processor configurations per run optimized for execution time or energy-delay product.",
+        "Hardware Metrics Modeling: Modeled pipeline leakage, cache leakage, memory access energy, and dynamic cycle times across superscalar widths; automated simulation execution and result parsing via C++ system calls and Unix shell scripting.",
+      ],
+      technologies: ["C++", "Computer Architecture", "Unix Shell Scripting", "Systems Programming"],
     },
     {
       name: "Thread Scheduler – Operating Systems",
