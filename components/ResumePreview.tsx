@@ -93,7 +93,7 @@ export const ResumePreview = forwardRef<HTMLDivElement, Props>(function ResumePr
 
       {/* Experience */}
       {data.experience.length > 0 && (
-        <Section title="Professional & Leadership Experience">
+        <Section title="Experience">
           {data.experience.map((job, i) => (
             <div key={i} className={i < data.experience.length - 1 ? "mb-[8px]" : ""}>
               <div className="flex justify-between items-baseline">
@@ -148,12 +148,12 @@ export const ResumePreview = forwardRef<HTMLDivElement, Props>(function ResumePr
 
       {/* Projects */}
       {data.projects.length > 0 && (
-        <Section title="Commercial & Technical Projects">
+        <Section title="Projects">
           {data.projects.map((project, i) => (
             <div key={i} className={i < data.projects.length - 1 ? "mb-[8px]" : ""}>
               <div className="flex justify-between items-baseline">
                 <span className="font-bold text-[#111111]">{project.name}</span>
-                {project.url && <span className="text-[9.5pt] text-[#555555]">{project.url}</span>}
+                {project.url && <span className="text-[9.5pt] text-[#555555]">{displayUrl(project.url)}</span>}
               </div>
               {project.role && (
                 <p className="text-[10pt] text-[#333333] mb-[2px]">{project.role}</p>

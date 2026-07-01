@@ -2,7 +2,7 @@ import { z } from "zod";
 
 const SkillCategorySchema = z.object({
   category: z.string().min(1),
-  items: z.array(z.string()),
+  items: z.array(z.string()).min(1),
 });
 
 const ExperienceSchema = z.object({
@@ -10,7 +10,7 @@ const ExperienceSchema = z.object({
   title: z.string().min(1),
   startDate: z.string(),
   endDate: z.string().nullable(),
-  bullets: z.array(z.string()),
+  bullets: z.array(z.string()).min(2).max(3),
   location: z.string().optional(),
 });
 
@@ -57,7 +57,7 @@ export const ProfileDataSchema = z.object({
 export const ResumeDataSchema = z.object({
   contact: ContactSchema.extend({ name: z.string().min(1) }),
   summary: z.string().min(1),
-  experience: z.array(ExperienceSchema).min(1),
+  experience: z.array(ExperienceSchema).min(1).max(3),
   education: z.array(EducationSchema),
   skills: z.array(SkillCategorySchema),
   projects: z.array(ProjectSchema),
