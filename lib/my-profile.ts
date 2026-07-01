@@ -241,7 +241,12 @@ const myProfile: ProfileData = {
     "Entrepreneurship Foundations (LinkedIn Learning)",
     "Business Analysis Foundations (LinkedIn Learning)",
     "Introduction to Web Design and Development (LinkedIn Learning)",
+    "Customer Service Foundations (LinkedIn Learning)",
+    "Creating Your Personal Brand (LinkedIn Learning)",
+    "Learning GitHub (LinkedIn Learning)",
     "Idea TestLab (Canvas Credentials / Badgr)",
+    "Learning Factory Capstone Onboarding (Penn State College of Engineering)",
+    "Bachelor of Science in Computer Engineering — Digital Credential (Penn State University)",
   ],
   contact: {
     email: "ilhamkassim2003@gmail.com",
