@@ -26,16 +26,6 @@ function displayUrl(url: string): string {
   return url.replace(/^https?:\/\/(www\.)?/, "");
 }
 
-function BoldLabelText({ text }: { text: string }) {
-  const colonIdx = text.indexOf(": ");
-  if (colonIdx === -1) return <span>{text}</span>;
-  return (
-    <span>
-      <strong>{text.slice(0, colonIdx + 1)}</strong>
-      {text.slice(colonIdx + 1)}
-    </span>
-  );
-}
 
 export const ResumePreview = forwardRef<HTMLDivElement, Props>(function ResumePreview({ data }, ref) {
   const left   = data.contact.email ?? "";
@@ -108,7 +98,7 @@ export const ResumePreview = forwardRef<HTMLDivElement, Props>(function ResumePr
                 {job.bullets.map((bullet, j) => (
                   <li key={j} className="flex gap-[10px] mb-[1.5px]">
                     <span className="text-[#333333] shrink-0">•</span>
-                    <span className="leading-[1.2]"><BoldLabelText text={bullet} /></span>
+                    <span className="leading-[1.2]">{bullet}</span>
                   </li>
                 ))}
               </ul>
@@ -163,7 +153,7 @@ export const ResumePreview = forwardRef<HTMLDivElement, Props>(function ResumePr
                   {project.bullets.map((bullet, j) => (
                     <li key={j} className="flex gap-[10px] mb-[1.5px]">
                       <span className="text-[#333333] shrink-0">•</span>
-                      <span className="leading-[1.2]"><BoldLabelText text={bullet} /></span>
+                      <span className="leading-[1.2]">{bullet}</span>
                     </li>
                   ))}
                 </ul>

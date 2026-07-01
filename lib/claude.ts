@@ -20,7 +20,7 @@ RELEVANCE CRITERIA: When selecting experience entries, projects, and certificati
 
 ATS OPTIMIZATION: Mirror exact keywords and terminology from the job description throughout the summary and experience bullets — not just the skills section. If the job posting uses specific phrases (e.g. "cross-functional collaboration", "agile environment", "machine learning pipelines"), incorporate them where they fit naturally and are supported by the profile.
 
-BULLET FORMAT: Every bullet point (in both experience and projects) must follow the pattern "Label: description" where the label is a 2–4 word thematic category in title case (e.g. "AI & Business Intelligence:", "Technical Operations:"), followed by a colon and space, then a concise one-line description starting with a strong action verb. Each bullet (excluding the label) must be under 20 words. Avoid filler phrases like "responsible for" or "helped with".
+BULLET FORMAT: Every bullet point must start with a strong action verb (e.g. "Engineered", "Designed", "Led", "Reduced", "Built") and be under 20 words. Where possible, include a quantified outcome (numbers, percentages, scale, or time). Avoid filler phrases like "responsible for" or "helped with".
 
 SUMMARY FORMAT: First sentence — your single strongest qualification for this specific role. Second sentence — the most relevant concrete experience or project that proves it. Total under 50 words.
 
