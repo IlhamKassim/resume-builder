@@ -4,7 +4,7 @@ const myProfile: ProfileData = {
   name: "Mohammad Ilham bin Kassim",
   headline:
     "Computer Engineering Senior @ Penn State | MARA YTP Scholar | Data Structures & Algorithms | AI & Systems Programming | Leadership & Innovation",
-  location: "State College, Pennsylvania, United States",
+  location: "Papar, Sabah, Malaysia",
   summary:
     "I like building things that make life a little easier to navigate. Currently finishing my Computer Engineering degree at Penn State, I've found that I'm most interested in where technical systems meet community needs. From working on technical operations here at the university to experimenting with truth-checking tools, I just enjoy solving puzzles that have a real-world impact.",
   experience: [
@@ -12,7 +12,7 @@ const myProfile: ProfileData = {
       company: "Penn State University – Division of Development and Alumni Relations",
       title: "DDAR Internship",
       startDate: "2025-04",
-      endDate: null,
+      endDate: "2026-07",
       location: "State College, Pennsylvania, United States",
       bullets: [
         "Evaluated generative AI, predictive modeling, and intelligent prospect research tools to accelerate Penn State's fundraising goals, delivering pilot-project roadmaps to Division leaders",
@@ -25,7 +25,7 @@ const myProfile: ProfileData = {
       company: "Penn State University – Smeal College of Business",
       title: "Online Program Moderator / Technical Assistant",
       startDate: "2025-02",
-      endDate: "2026-05",
+      endDate: "2026-07",
       location: "State College, Pennsylvania, United States",
       bullets: [
         "Managed technical operations for 6+ live executive education sessions per week, supporting 20 senior leaders per session from public and private sector organizations across supply chain, logistics, and business disciplines",
@@ -129,7 +129,7 @@ const myProfile: ProfileData = {
       degree: "Bachelor of Science",
       field: "Computer Engineering",
       startDate: "2022-08",
-      endDate: "2026-08",
+      endDate: "2026-05",
       description:
         "Activities: Malaysia Students Club (External Vice President), The Borneo (Founding Member), Google Developer Club (Member)",
     },
@@ -163,6 +163,18 @@ const myProfile: ProfileData = {
     "Stakeholder Engagement", "Organizational Management", "Business Development", "Entrepreneurship",
   ],
   projects: [
+    {
+      name: "AI Resume Builder",
+      role: "Full-Stack Developer",
+      description:
+        "A full-stack web app that tailors a resume to a specific job description using the Claude API, built with Next.js App Router, TypeScript, and Zod schema validation, with a Vitest test suite covering the tailoring pipeline.",
+      bullets: [
+        "Built an AI-powered resume tailoring pipeline using the Claude API, with Zod-validated request/response schemas to guarantee structured, ATS-safe output",
+        "Engineered a Next.js 16 App Router application with a Vitest test suite covering prompt construction, schema validation, and error handling",
+      ],
+      url: "https://github.com/IlhamKassim/resume-builder",
+      technologies: ["Next.js", "TypeScript", "Claude API", "Zod", "Vitest", "Tailwind CSS"],
+    },
     {
       name: "Reber Building Virtual Tour (Kinetic Engineering Collective)",
       role: "Lead Developer",
@@ -248,6 +260,7 @@ const myProfile: ProfileData = {
   contact: {
     email: "ilhamkassim2003@gmail.com",
     phone: "+60 17-528 4805",
+    location: "Papar, Sabah, Malaysia",
     website: "https://ilham-portfolio-yl2x.vercel.app/",
     linkedin: "https://www.linkedin.com/in/ilhamkassim",
   },
