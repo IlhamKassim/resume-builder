@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { JobDescriptionInput } from "@/components/JobDescriptionInput";
 import myProfile from "@/lib/my-profile";
@@ -94,11 +95,19 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-gray-50">
       <div className="max-w-2xl mx-auto py-12 px-4">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Resume Builder</h1>
-          <p className="mt-1 text-gray-500">
-            Paste a job description and get a tailored resume in seconds.
-          </p>
+        <div className="mb-8 flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Resume Builder</h1>
+            <p className="mt-1 text-gray-500">
+              Paste a job description and get a tailored resume in seconds.
+            </p>
+          </div>
+          <Link
+            href="/jobs"
+            className="shrink-0 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors underline underline-offset-2 mt-1"
+          >
+            Job Dossier →
+          </Link>
         </div>
 
         <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
