@@ -133,7 +133,7 @@ Tailor the resume to this job description. Remember: only use facts from the pro
   try {
     response = await callWithRetry(() =>
       client.messages.create({
-        model: "claude-sonnet-4-6",
+        model: process.env.ANTHROPIC_MODEL || "claude-sonnet-4-6",
         max_tokens: 4096,
         system: SYSTEM_PROMPT,
         messages: [{ role: "user", content: userMessage }],
