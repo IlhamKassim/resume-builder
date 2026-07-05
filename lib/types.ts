@@ -73,6 +73,12 @@ export const TailorRequestSchema = z.object({
   jobDescription: z.string().min(1),
 });
 
+export const CoverLetterDataSchema = z.object({
+  greeting: z.string().min(1),
+  paragraphs: z.array(z.string().min(1)).min(2).max(4),
+  signOff: z.string().min(1),
+});
+
 export type Experience = z.infer<typeof ExperienceSchema>;
 export type Education = z.infer<typeof EducationSchema>;
 export type Project = z.infer<typeof ProjectSchema>;
@@ -81,3 +87,4 @@ export type Contact = z.infer<typeof ContactSchema>;
 export type ProfileData = z.infer<typeof ProfileDataSchema>;
 export type ResumeData = z.infer<typeof ResumeDataSchema>;
 export type TailorRequest = z.infer<typeof TailorRequestSchema>;
+export type CoverLetterData = z.infer<typeof CoverLetterDataSchema>;

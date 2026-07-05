@@ -1,13 +1,14 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { ResumeDataSchema } from "@/lib/types";
-import type { ProfileData, ResumeData } from "@/lib/types";
+import { ResumeDataSchema, CoverLetterDataSchema } from "@/lib/types";
+import type { ProfileData, ResumeData, CoverLetterData } from "@/lib/types";
+import type { ZodType } from "zod";
 
 const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
   timeout: 55_000,
 });
 
-const SYSTEM_PROMPT = `You are a professional resume writer. Your task is to tailor a resume to a specific job description.
+const RESUME_SYSTEM_PROMPT = `You are a professional resume writer. Your task is to tailor a resume to a specific job description.
 
 CRITICAL RULES — you must follow these without exception:
 1. Only use information explicitly present in the provided profile data. Never invent, embellish, or infer any experience, skills, achievements, or responsibilities not present in the profile.
@@ -77,6 +78,24 @@ OUTPUT SCHEMA:
   "certifications": ["string (certification name and issuer, e.g. 'Artificial Intelligence Foundations: Machine Learning (LinkedIn Learning)') — omit field if none are relevant"]
 }`;
 
+const COVER_LETTER_SYSTEM_PROMPT = `You are a professional cover letter writer. Your task is to write a concise, tailored cover letter for a specific job description, based only on the candidate's profile data.
+
+CRITICAL RULES — you must follow these without exception:
+1. Only use information explicitly present in the provided profile data. Never invent, embellish, or infer any experience, skills, achievements, or responsibilities not present in the profile.
+2. LOCATION FIELDS ARE VERBATIM: never reference a specific city/region/company location beyond what's explicitly in the profile data.
+3. Return ONLY a valid JSON object matching the schema below — no markdown, no explanation, no code fences.
+4. Keep it to 2–3 body paragraphs, under 300 words total (excluding greeting/sign-off). Professional, confident tone — avoid clichés like "I am writing to express my interest."
+5. Paragraph 1: why this role/company specifically, tied to one real, concrete qualification from the profile. Paragraph 2 (and optional paragraph 3): concrete evidence from experience or projects that prove fit. Mirror key terminology from the job description only where genuinely supported by the profile.
+6. Greeting should be "Dear Hiring Manager," unless a specific name or team is given in the job description.
+7. Sign-off should be just "Sincerely," — the candidate's name is rendered separately, do not include it.
+
+OUTPUT SCHEMA:
+{
+  "greeting": "string",
+  "paragraphs": ["string", "string"],
+  "signOff": "string"
+}`;
+
 export class TailoringError extends Error {
   constructor(message: string) {
     super(message);
@@ -117,52 +136,49 @@ export interface TokenUsage {
   outputTokens: number;
 }
 
-export async function tailorResume(
-  profile: ProfileData,
-  jobDescription: string
-): Promise<{ resume: ResumeData; usage: TokenUsage }> {
-  const userMessage = `PROFILE DATA:
-${JSON.stringify(profile, null, 2)}
+function mapClaudeCallError(err: unknown, action: string): never {
+  if (err instanceof Anthropic.RateLimitError) {
+    throw new TailoringError(
+      `${action} failed — API rate limit reached. Please try again in a moment.`
+    );
+  }
+  if (err instanceof Anthropic.APIConnectionTimeoutError) {
+    throw new TailoringError(`${action} failed — request timed out. Please try again.`);
+  }
+  if (err instanceof Anthropic.APIConnectionError) {
+    throw new TailoringError(
+      `${action} failed — could not reach the AI service. Please check your connection and try again.`
+    );
+  }
+  throw err;
+}
 
-JOB DESCRIPTION:
-${jobDescription}
-
-Tailor the resume to this job description. Remember: only use facts from the profile data above.`;
+async function callClaudeForJson<T>(opts: {
+  action: string;
+  system: string;
+  userMessage: string;
+  maxTokens: number;
+  schema: ZodType<T>;
+}): Promise<{ data: T; usage: TokenUsage }> {
+  const { action, system, userMessage, maxTokens, schema } = opts;
 
   let response: Anthropic.Message;
   try {
     response = await callWithRetry(() =>
       client.messages.create({
         model: process.env.ANTHROPIC_MODEL || "claude-sonnet-4-6",
-        max_tokens: 4096,
-        system: SYSTEM_PROMPT,
+        max_tokens: maxTokens,
+        system,
         messages: [{ role: "user", content: userMessage }],
       })
     );
   } catch (err) {
-    if (err instanceof Anthropic.RateLimitError) {
-      throw new TailoringError(
-        "Resume generation failed — API rate limit reached. Please try again in a moment."
-      );
-    }
-    if (err instanceof Anthropic.APIConnectionTimeoutError) {
-      throw new TailoringError(
-        "Resume generation failed — request timed out. Please try again."
-      );
-    }
-    if (err instanceof Anthropic.APIConnectionError) {
-      throw new TailoringError(
-        "Resume generation failed — could not reach the AI service. Please check your connection and try again."
-      );
-    }
-    throw err;
+    mapClaudeCallError(err, action);
   }
 
   const textBlock = response.content.find((block) => block.type === "text");
   if (!textBlock || textBlock.type !== "text") {
-    throw new TailoringError(
-      "Resume generation failed — no text response from AI. Please try again."
-    );
+    throw new TailoringError(`${action} failed — no text response from AI. Please try again.`);
   }
 
   let parsed: unknown;
@@ -175,22 +191,68 @@ Tailor the resume to this job description. Remember: only use facts from the pro
     parsed = JSON.parse(cleaned);
   } catch {
     throw new TailoringError(
-      "Resume generation failed — AI returned an unexpected format. Please try again."
+      `${action} failed — AI returned an unexpected format. Please try again.`
     );
   }
 
-  const validated = ResumeDataSchema.safeParse(parsed);
+  const validated = schema.safeParse(parsed);
   if (!validated.success) {
     throw new TailoringError(
-      "Resume generation failed — AI output didn't match expected structure. Please try again."
+      `${action} failed — AI output didn't match expected structure. Please try again.`
     );
   }
 
   return {
-    resume: validated.data,
+    data: validated.data,
     usage: {
       inputTokens: response.usage.input_tokens,
       outputTokens: response.usage.output_tokens,
     },
   };
+}
+
+export async function tailorResume(
+  profile: ProfileData,
+  jobDescription: string
+): Promise<{ resume: ResumeData; usage: TokenUsage }> {
+  const userMessage = `PROFILE DATA:
+${JSON.stringify(profile, null, 2)}
+
+JOB DESCRIPTION:
+${jobDescription}
+
+Tailor the resume to this job description. Remember: only use facts from the profile data above.`;
+
+  const { data, usage } = await callClaudeForJson({
+    action: "Resume generation",
+    system: RESUME_SYSTEM_PROMPT,
+    userMessage,
+    maxTokens: 4096,
+    schema: ResumeDataSchema,
+  });
+
+  return { resume: data, usage };
+}
+
+export async function generateCoverLetter(
+  profile: ProfileData,
+  jobDescription: string
+): Promise<{ coverLetter: CoverLetterData; usage: TokenUsage }> {
+  const userMessage = `PROFILE DATA:
+${JSON.stringify(profile, null, 2)}
+
+JOB DESCRIPTION:
+${jobDescription}
+
+Write a tailored cover letter for this job description. Remember: only use facts from the profile data above.`;
+
+  const { data, usage } = await callClaudeForJson({
+    action: "Cover letter generation",
+    system: COVER_LETTER_SYSTEM_PROMPT,
+    userMessage,
+    maxTokens: 1024,
+    schema: CoverLetterDataSchema,
+  });
+
+  return { coverLetter: data, usage };
 }

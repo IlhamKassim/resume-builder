@@ -165,3 +165,116 @@ describe("tailorResume", () => {
     expect(callArgs.system.toLowerCase()).toMatch(/only|never invent|do not invent/);
   });
 });
+
+const validCoverLetterOutput = {
+  greeting: "Dear Hiring Manager,",
+  paragraphs: [
+    "I'm drawn to this role because of its focus on AI-driven systems, which lines up directly with my experience evaluating generative AI tools for Penn State's fundraising division.",
+    "In that role I evaluated generative AI and predictive modeling tools and validated a CRM data migration, giving me hands-on exposure to shipping AI-adjacent tools in a real organization.",
+  ],
+  signOff: "Sincerely,",
+};
+
+describe("generateCoverLetter", () => {
+  beforeEach(() => {
+    mockCreate.mockReset();
+  });
+
+  it("returns a valid CoverLetterData object when Claude responds correctly", async () => {
+    mockCreate.mockResolvedValueOnce({
+      content: [{ type: "text", text: JSON.stringify(validCoverLetterOutput) }],
+      usage: { input_tokens: 80, output_tokens: 40 },
+    });
+
+    const { generateCoverLetter } = await import("../claude");
+    const { coverLetter, usage } = await generateCoverLetter(profileFixture, jobDescriptionFixture);
+
+    expect(coverLetter.greeting).toBe("Dear Hiring Manager,");
+    expect(coverLetter.paragraphs.length).toBeGreaterThanOrEqual(2);
+    expect(usage.inputTokens).toBe(80);
+    expect(usage.outputTokens).toBe(40);
+  });
+
+  it("passes profile data and job description to Claude", async () => {
+    mockCreate.mockResolvedValueOnce({
+      content: [{ type: "text", text: JSON.stringify(validCoverLetterOutput) }],
+      usage: { input_tokens: 80, output_tokens: 40 },
+    });
+
+    const { generateCoverLetter } = await import("../claude");
+    await generateCoverLetter(profileFixture, jobDescriptionFixture);
+
+    const callArgs = mockCreate.mock.calls[0][0];
+    const userMessage = callArgs.messages.find((m: { role: string }) => m.role === "user");
+    expect(JSON.stringify(userMessage.content)).toContain("Mohammad Ilham bin Kassim");
+    expect(JSON.stringify(userMessage.content)).toContain("Software Engineer Intern");
+  });
+
+  it("throws when Claude returns invalid JSON", async () => {
+    mockCreate.mockResolvedValueOnce({
+      content: [{ type: "text", text: "Sorry, I cannot help with that." }],
+    });
+
+    const { generateCoverLetter } = await import("../claude");
+    await expect(generateCoverLetter(profileFixture, jobDescriptionFixture)).rejects.toThrow();
+  });
+
+  it("throws when Claude returns JSON that fails CoverLetterData schema", async () => {
+    mockCreate.mockResolvedValueOnce({
+      content: [{ type: "text", text: JSON.stringify({ greeting: "Hi," }) }],
+    });
+
+    const { generateCoverLetter } = await import("../claude");
+    await expect(generateCoverLetter(profileFixture, jobDescriptionFixture)).rejects.toThrow();
+  });
+
+  it("retries on rate limit and succeeds on second attempt", async () => {
+    const { default: Anthropic } = await import("@anthropic-ai/sdk");
+    mockCreate
+      .mockRejectedValueOnce(new Anthropic.RateLimitError(429, undefined, "rate limited", new Headers()))
+      .mockResolvedValueOnce({
+        content: [{ type: "text", text: JSON.stringify(validCoverLetterOutput) }],
+        usage: { input_tokens: 80, output_tokens: 40 },
+      });
+
+    const { generateCoverLetter } = await import("../claude");
+    const { coverLetter } = await generateCoverLetter(profileFixture, jobDescriptionFixture);
+    expect(coverLetter.greeting).toBe("Dear Hiring Manager,");
+    expect(mockCreate).toHaveBeenCalledTimes(2);
+  });
+
+  it("throws TailoringError after exhausting retries on rate limit", async () => {
+    const { default: Anthropic } = await import("@anthropic-ai/sdk");
+    mockCreate.mockRejectedValue(
+      new Anthropic.RateLimitError(429, undefined, "rate limited", new Headers())
+    );
+
+    const { generateCoverLetter, TailoringError } = await import("../claude");
+    await expect(generateCoverLetter(profileFixture, jobDescriptionFixture)).rejects.toThrow(
+      TailoringError
+    );
+  });
+
+  it("throws TailoringError on timeout", async () => {
+    const { default: Anthropic } = await import("@anthropic-ai/sdk");
+    mockCreate.mockRejectedValue(new Anthropic.APIConnectionTimeoutError());
+
+    const { generateCoverLetter, TailoringError } = await import("../claude");
+    await expect(generateCoverLetter(profileFixture, jobDescriptionFixture)).rejects.toThrow(
+      TailoringError
+    );
+  });
+
+  it("includes a no-hallucination instruction in the system prompt", async () => {
+    mockCreate.mockResolvedValueOnce({
+      content: [{ type: "text", text: JSON.stringify(validCoverLetterOutput) }],
+      usage: { input_tokens: 80, output_tokens: 40 },
+    });
+
+    const { generateCoverLetter } = await import("../claude");
+    await generateCoverLetter(profileFixture, jobDescriptionFixture);
+
+    const callArgs = mockCreate.mock.calls[0][0];
+    expect(callArgs.system.toLowerCase()).toMatch(/only|never invent|do not invent/);
+  });
+});

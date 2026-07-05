@@ -81,6 +81,8 @@ export default function Home() {
 
       const { _usage: _, ...resumeData } = data;
       sessionStorage.setItem("resumeData", JSON.stringify(resumeData));
+      sessionStorage.setItem("jobDescription", jobDescription);
+      sessionStorage.removeItem("coverLetterData");
       router.push("/preview");
     } catch {
       setError("Network error. Please try again.");
