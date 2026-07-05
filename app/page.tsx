@@ -4,6 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { JobDescriptionInput } from "@/components/JobDescriptionInput";
+import { BlueprintTitleBlock } from "@/components/BlueprintTitleBlock";
+import { BlueprintPipeline } from "@/components/BlueprintPipeline";
 import myProfile from "@/lib/my-profile";
 
 // Claude Sonnet 4.6 pricing (per million tokens)
@@ -28,20 +30,20 @@ function UsageBar({ usage }: { usage: SessionUsage }) {
   const estimatedCost = cost(usage);
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 flex items-center justify-between gap-4 text-sm">
-      <div className="flex items-center gap-4 text-gray-600">
+    <div className="border border-[var(--bp-panel-line)] px-4 py-3 flex items-center justify-between gap-4 blueprint-mono text-[11.5px]">
+      <div className="flex items-center gap-4 text-[var(--bp-line-dim)]">
         <span>
-          <span className="font-medium text-gray-900">{usage.generations}</span>
+          <span className="text-[var(--bp-line)] tabular-nums">{usage.generations}</span>
           {" "}generation{usage.generations !== 1 ? "s" : ""} this session
         </span>
-        <span className="text-gray-300">|</span>
+        <span className="text-[var(--bp-panel-line)]">|</span>
         <span>
-          <span className="font-medium text-gray-900">{totalTokens.toLocaleString()}</span>
+          <span className="text-[var(--bp-line)] tabular-nums">{totalTokens.toLocaleString()}</span>
           {" "}tokens used
         </span>
       </div>
-      <span className="text-gray-500">
-        ~<span className="font-medium text-gray-900">${estimatedCost.toFixed(4)}</span> spent
+      <span className="text-[var(--bp-line-dim)]">
+        ~<span className="text-[var(--bp-accent)] tabular-nums">${estimatedCost.toFixed(4)}</span> spent
       </span>
     </div>
   );
@@ -93,37 +95,42 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      <div className="max-w-2xl mx-auto py-12 px-4">
-        <div className="mb-8 flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Resume Builder</h1>
-            <p className="mt-1 text-gray-500">
-              Paste a job description and get a tailored resume in seconds.
-            </p>
-          </div>
+    <main className="blueprint-sheet">
+      <div className="max-w-[920px] mx-auto py-10 px-6 pb-24">
+        <BlueprintTitleBlock
+          dwgNo="RB-2026-01"
+          rev="A"
+          title="Automated Résumé Tailoring Apparatus"
+          subtitle="Paste a job description and get a tailored resume in seconds."
+        />
+
+        <div className="flex justify-end mb-8 -mt-4">
           <Link
             href="/jobs"
-            className="shrink-0 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors underline underline-offset-2 mt-1"
+            className="blueprint-mono text-[11px] tracking-[0.06em] uppercase text-[var(--bp-label)] hover:text-[var(--bp-accent)] transition-colors underline underline-offset-2"
           >
             Job Dossier →
           </Link>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
+        <p className="blueprint-mono text-[11px] tracking-[0.1em] uppercase text-[var(--bp-accent)] mb-1">
+          Fig. 2
+        </p>
+        <h2 className="text-[20px] font-normal mb-4">Control panel</h2>
+        <div className="space-y-4">
           <JobDescriptionInput
             onGenerate={handleGenerate}
             isGenerating={isGenerating}
           />
 
           {error && (
-            <div className="rounded-md bg-red-50 border border-red-200 p-3 flex items-start justify-between gap-3">
-              <p className="text-sm text-red-700">{error}</p>
+            <div className="border border-[var(--bp-accent)] p-3 flex items-start justify-between gap-3">
+              <p className="text-sm text-[var(--bp-line)]">{error}</p>
               {lastJobDescription && (
                 <button
                   onClick={() => handleGenerate(lastJobDescription)}
                   disabled={isGenerating}
-                  className="shrink-0 text-sm font-medium text-red-700 underline underline-offset-2 disabled:opacity-50"
+                  className="blueprint-mono shrink-0 text-[11px] uppercase tracking-[0.04em] text-[var(--bp-accent)] underline underline-offset-2 disabled:opacity-50"
                 >
                   Try again
                 </button>
@@ -137,6 +144,10 @@ export default function Home() {
             <UsageBar usage={sessionUsage} />
           </div>
         )}
+
+        <div className="mt-14">
+          <BlueprintPipeline />
+        </div>
       </div>
     </main>
   );

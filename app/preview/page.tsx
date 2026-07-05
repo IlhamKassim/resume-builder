@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { BlueprintThemeToggle } from "@/components/BlueprintThemeToggle";
 import { ResumePreview } from "@/components/ResumePreview";
 import { CoverLetterPreview } from "@/components/CoverLetterPreview";
 import myProfile from "@/lib/my-profile";
@@ -116,29 +116,31 @@ export default function PreviewPage() {
 
   if (!resumeData) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-400 text-sm">Loading…</p>
+      <div className="blueprint-sheet flex items-center justify-center">
+        <p className="blueprint-mono text-[var(--bp-line-dim)] text-sm">Loading…</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 print:bg-white print:min-h-0">
+    <div className="blueprint-sheet print:bg-white print:min-h-0">
       {/* Toolbar — hidden when printing */}
-      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 py-3 print:hidden">
+      <div className="sticky top-0 z-10 bg-[var(--bp-bg)] border-b border-[var(--bp-panel-line)] px-4 py-3 print:hidden">
         <div className="max-w-[760px] mx-auto flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <button
               onClick={() => router.push("/")}
-              className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
+              className="blueprint-mono text-[11px] tracking-[0.06em] uppercase text-[var(--bp-label)] hover:text-[var(--bp-accent)] transition-colors"
             >
               ← Back
             </button>
-            <div className="flex items-center rounded-md border border-gray-200 p-0.5 text-sm">
+            <div className="flex items-center border border-[var(--bp-panel-line)] p-0.5 blueprint-mono text-[11px] tracking-[0.04em] uppercase">
               <button
                 onClick={() => setActiveTab("resume")}
-                className={`px-3 py-1 rounded transition-colors ${
-                  activeTab === "resume" ? "bg-gray-900 text-white" : "text-gray-600 hover:text-gray-900"
+                className={`px-3 py-1.5 transition-colors ${
+                  activeTab === "resume"
+                    ? "bg-[var(--bp-panel-line)] text-[var(--bp-line)]"
+                    : "text-[var(--bp-line-dim)] hover:text-[var(--bp-line)]"
                 }`}
               >
                 Resume
@@ -146,8 +148,10 @@ export default function PreviewPage() {
               <button
                 onClick={() => (coverLetterData ? setActiveTab("cover-letter") : handleGenerateCoverLetter())}
                 disabled={isGeneratingCoverLetter || (!coverLetterData && !jobDescription)}
-                className={`px-3 py-1 rounded transition-colors disabled:opacity-50 ${
-                  activeTab === "cover-letter" ? "bg-gray-900 text-white" : "text-gray-600 hover:text-gray-900"
+                className={`px-3 py-1.5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+                  activeTab === "cover-letter"
+                    ? "bg-[var(--bp-panel-line)] text-[var(--bp-line)]"
+                    : "text-[var(--bp-line-dim)] hover:text-[var(--bp-line)]"
                 }`}
               >
                 {isGeneratingCoverLetter
@@ -158,12 +162,20 @@ export default function PreviewPage() {
               </button>
             </div>
           </div>
-          <Button onClick={handlePrint}>Save as PDF</Button>
+          <div className="flex items-center gap-2">
+            <BlueprintThemeToggle />
+            <button
+              onClick={handlePrint}
+              className="blueprint-mono text-[11px] tracking-[0.06em] uppercase bg-[var(--bp-panel)] border-[1.3px] border-[var(--bp-line)] text-[var(--bp-line)] px-4 py-2 hover:bg-[var(--bp-panel-line)] transition-colors"
+            >
+              Save as PDF
+            </button>
+          </div>
         </div>
         {coverLetterError && (
-          <div className="max-w-[760px] mx-auto mt-2 text-sm text-red-700">{coverLetterError}</div>
+          <div className="max-w-[760px] mx-auto mt-2 blueprint-mono text-[12px] text-[var(--bp-accent)]">{coverLetterError}</div>
         )}
-        <p className="max-w-[760px] mx-auto mt-2 text-xs text-gray-400 print:hidden">
+        <p className="max-w-[760px] mx-auto mt-2 blueprint-mono text-[11px] text-[var(--bp-line-dim)] print:hidden">
           Click any text below to edit it before saving as PDF.
         </p>
       </div>

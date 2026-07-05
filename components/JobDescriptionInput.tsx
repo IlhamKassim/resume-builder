@@ -1,8 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 
 interface Props {
   onGenerate: (jobDescription: string) => void;
@@ -13,36 +11,43 @@ export function JobDescriptionInput({ onGenerate, isGenerating }: Props) {
   const [jobDescription, setJobDescription] = useState("");
 
   return (
-    <div className="space-y-3 mt-6">
+    <div className="border border-[var(--bp-panel-line)] p-6 grid gap-4.5">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Job Description
+        <label
+          htmlFor="jobDescription"
+          className="blueprint-mono block text-[10.5px] tracking-[0.08em] uppercase text-[var(--bp-label)] mb-2"
+        >
+          Input — Job Description (Free Text)
         </label>
-        <p className="text-xs text-gray-500 mb-2">
-          Paste the full job posting. The more detail, the better the tailoring.
-        </p>
-        <Textarea
+        <textarea
+          id="jobDescription"
           value={jobDescription}
           onChange={(e) => setJobDescription(e.target.value)}
           placeholder="We are looking for a Software Engineer…"
           rows={10}
-          className="resize-none text-sm"
+          className="w-full min-h-[92px] bg-[var(--bp-panel)] border border-[var(--bp-panel-line)] text-[var(--bp-line)] text-sm p-3 resize-none placeholder:text-[var(--bp-line-dim)] focus-visible:outline focus-visible:outline-[1.5px] focus-visible:outline-[var(--bp-accent)] focus-visible:outline-offset-1"
         />
+        <p className="blueprint-mono text-[11px] text-[var(--bp-line-dim)] mt-2">
+          Paste the full job posting. The more detail, the better the tailoring.
+        </p>
       </div>
 
-      <Button
-        onClick={() => onGenerate(jobDescription)}
-        disabled={!jobDescription.trim() || isGenerating}
-        className="w-full"
-      >
-        {isGenerating ? "Generating your resume…" : "Generate Resume"}
-      </Button>
+      <div className="flex items-center gap-4">
+        <button
+          onClick={() => onGenerate(jobDescription)}
+          disabled={!jobDescription.trim() || isGenerating}
+          className="relative blueprint-mono text-[11.5px] tracking-[0.06em] uppercase bg-[var(--bp-panel)] border-[1.3px] border-[var(--bp-line)] text-[var(--bp-line)] px-5 py-2.5 transition-[transform,background-color] hover:enabled:bg-[var(--bp-panel-line)] active:enabled:translate-y-px disabled:opacity-40 disabled:cursor-not-allowed before:content-[''] before:absolute before:left-[-1.3px] before:top-[-1.3px] before:bottom-[-1.3px] before:w-1 before:bg-[var(--bp-accent)] before:opacity-0 data-[armed=true]:before:opacity-100"
+          data-armed={isGenerating}
+        >
+          {isGenerating ? "Engine engaged…" : "Actuate — Generate Resume"}
+        </button>
 
-      {isGenerating && (
-        <p className="text-xs text-center text-gray-400">
-          This takes about 10–15 seconds
-        </p>
-      )}
+        {isGenerating && (
+          <span className="blueprint-mono text-[11px] text-[var(--bp-accent)]">
+            This takes about 10–15 seconds
+          </span>
+        )}
+      </div>
     </div>
   );
 }

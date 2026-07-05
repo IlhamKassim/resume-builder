@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
+import { BlueprintTitleBlock } from "@/components/BlueprintTitleBlock";
 import { jobListings, jobListingsCompiledOn, type ListingType } from "@/lib/job-listings";
 
 const TYPE_LABEL: Record<ListingType, string> = {
@@ -9,9 +8,9 @@ const TYPE_LABEL: Record<ListingType, string> = {
 };
 
 const TYPE_CLASSES: Record<ListingType, string> = {
-  direct: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  page: "bg-gray-100 text-gray-600 border-gray-200",
-  program: "bg-amber-50 text-amber-700 border-amber-200",
+  direct: "border-[var(--bp-accent)] text-[var(--bp-accent)]",
+  page: "border-[var(--bp-panel-line)] text-[var(--bp-line-dim)]",
+  program: "border-[var(--bp-line-dim)] text-[var(--bp-label)]",
 };
 
 export default function JobsPage() {
@@ -23,54 +22,54 @@ export default function JobsPage() {
   });
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      <div className="max-w-3xl mx-auto py-12 px-4">
-        <div className="mb-2">
-          <Link href="/" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
-            ← Back
-          </Link>
-        </div>
+    <main className="blueprint-sheet">
+      <div className="max-w-[920px] mx-auto py-10 px-6 pb-24">
+        <BlueprintTitleBlock
+          dwgNo="RB-2026-02"
+          rev="A"
+          title="Job Search Dossier"
+          subtitle={`${total} openings — MY / SG / UK (sponsored)`}
+          backHref="/"
+        />
 
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Job Search Dossier</h1>
-          <p className="mt-1 text-gray-500">
-            {total} openings compiled {compiledDate} across Malaysia, Singapore, and
-            sponsorship-confirmed UK employers.
-          </p>
-          <p className="mt-3 text-sm text-gray-400 max-w-2xl">
-            This is a one-time pull from a live web search, not a monitored feed. &ldquo;Direct&rdquo;
-            links can go stale within days — &ldquo;Careers page&rdquo; links are the more durable bet
-            since they always show whatever is currently open. Re-verify before applying, and for
-            UK roles confirm sponsorship on the specific req.
-          </p>
-        </div>
+        <p className="blueprint-mono text-[11.5px] text-[var(--bp-line-dim)] max-w-[62ch] mb-8 -mt-4">
+          Compiled {compiledDate} from a live web search — not a monitored feed. &ldquo;Direct&rdquo;{" "}
+          links can go stale within days; &ldquo;Careers page&rdquo; links are the more durable bet
+          since they always show whatever is currently open. Re-verify before applying, and for UK
+          roles confirm sponsorship on the specific req.
+        </p>
 
-        <div className="flex flex-wrap gap-2 mb-8">
+        <div className="flex flex-wrap gap-2 mb-10">
           {jobListings.map((c) => (
             <a
               key={c.country}
               href={`#${c.country.toLowerCase().replace(/\s+/g, "-")}`}
-              className="text-xs font-medium px-3 py-1.5 rounded-full border border-gray-200 bg-white text-gray-600 hover:text-gray-900 hover:border-gray-300 transition-colors"
+              className="blueprint-mono text-[11px] tracking-[0.04em] uppercase px-3 py-1.5 border border-[var(--bp-panel-line)] text-[var(--bp-label)] hover:border-[var(--bp-accent)] hover:text-[var(--bp-accent)] transition-colors"
             >
               {c.country} ({c.listings.length})
             </a>
           ))}
         </div>
 
-        <div className="space-y-10">
-          {jobListings.map((c) => (
+        <div className="space-y-12">
+          {jobListings.map((c, ci) => (
             <section
               key={c.country}
               id={c.country.toLowerCase().replace(/\s+/g, "-")}
               className="scroll-mt-6"
             >
+              <p className="blueprint-mono text-[11px] tracking-[0.1em] uppercase text-[var(--bp-accent)] mb-1">
+                Fig. {ci + 1}
+              </p>
               <div className="flex items-baseline justify-between gap-3 mb-1">
-                <h2 className="text-xl font-semibold text-gray-900">{c.country}</h2>
-                <span className="text-xs text-gray-400">{c.listings.length} entries</span>
+                <h2 className="text-[20px] font-normal">{c.country}</h2>
+                <span className="blueprint-mono text-[11px] text-[var(--bp-line-dim)]">
+                  {c.listings.length} entries
+                </span>
               </div>
-              <p className="text-sm text-gray-500 mb-4 max-w-2xl">{c.blurb}</p>
+              <p className="text-[13.5px] text-[var(--bp-line-dim)] mb-4 max-w-[64ch]">{c.blurb}</p>
 
-              <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100">
+              <div className="border border-[var(--bp-panel-line)] divide-y divide-[var(--bp-panel-line)]">
                 {c.listings.map((job, i) => (
                   <div
                     key={i}
@@ -78,21 +77,23 @@ export default function JobsPage() {
                   >
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-medium text-gray-900">{job.company}</span>
-                        <Badge variant="outline" className={TYPE_CLASSES[job.type]}>
+                        <span className="font-medium text-[var(--bp-line)]">{job.company}</span>
+                        <span
+                          className={`blueprint-mono text-[10px] tracking-[0.04em] uppercase border px-1.5 py-0.5 ${TYPE_CLASSES[job.type]}`}
+                        >
                           {TYPE_LABEL[job.type]}
-                        </Badge>
+                        </span>
                       </div>
-                      <p className="text-gray-600 mt-0.5">
-                        {job.role}
-                        {job.note && <span className="text-gray-400"> — {job.note}</span>}
+                      <p className="text-[var(--bp-line-dim)] mt-0.5">
+                        <span className="text-[var(--bp-line)]">{job.role}</span>
+                        {job.note && <span> — {job.note}</span>}
                       </p>
                     </div>
                     <a
                       href={job.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="shrink-0 text-xs font-mono text-gray-500 hover:text-gray-900 underline underline-offset-2 mt-1"
+                      className="shrink-0 blueprint-mono text-[11.5px] text-[var(--bp-line-dim)] hover:text-[var(--bp-accent)] underline underline-offset-2 mt-1"
                     >
                       {job.linkLabel} ↗
                     </a>

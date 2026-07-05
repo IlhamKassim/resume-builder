@@ -138,3 +138,68 @@
     background: white !important;
   }
 }
+
+/* ---------- Blueprint theme ----------
+   App chrome (home, preview toolbar, jobs page) is drawn as an engineering
+   blueprint. Two historically real reproduction processes stand in for
+   dark/light mode: cyanotype (white line on blue ground) and diazo/
+   blackline (blue line on pale vellum) — not a naive color invert.
+   The résumé/cover-letter documents themselves never use these tokens;
+   they must stay plain and ATS-clean since they're what gets printed. */
+:root {
+  --bp-bg: #163a5e;
+  --bp-bg-deep: #0f2c48;
+  --bp-grid: rgba(234, 244, 251, 0.07);
+  --bp-line: #eaf4fb;
+  --bp-line-dim: #7fa9c7;
+  --bp-accent: #e8823c;
+  --bp-label: #bfdcef;
+  --bp-panel: rgba(234, 244, 251, 0.04);
+  --bp-panel-line: rgba(234, 244, 251, 0.28);
+}
+
+[data-theme="light"] {
+  --bp-bg: #f1eee3;
+  --bp-bg-deep: #e6e0ce;
+  --bp-grid: rgba(27, 58, 92, 0.08);
+  --bp-line: #1b3a5c;
+  --bp-line-dim: #6e85a0;
+  --bp-accent: #c1571f;
+  --bp-label: #2b4256;
+  --bp-panel: rgba(27, 58, 92, 0.035);
+  --bp-panel-line: rgba(27, 58, 92, 0.32);
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bp-bg: #f1eee3;
+    --bp-bg-deep: #e6e0ce;
+    --bp-grid: rgba(27, 58, 92, 0.08);
+    --bp-line: #1b3a5c;
+    --bp-line-dim: #6e85a0;
+    --bp-accent: #c1571f;
+    --bp-label: #2b4256;
+    --bp-panel: rgba(27, 58, 92, 0.035);
+    --bp-panel-line: rgba(27, 58, 92, 0.32);
+  }
+}
+
+.blueprint-sheet {
+  min-height: 100vh;
+  color: var(--bp-line);
+  font-family: var(--font-serif-bp, Georgia, "Iowan Old Style", "Palatino Linotype", serif);
+  background:
+    linear-gradient(var(--bp-grid) 1px, transparent 1px) 0 0 / 28px 28px,
+    linear-gradient(90deg, var(--bp-grid) 1px, transparent 1px) 0 0 / 28px 28px,
+    radial-gradient(ellipse at 50% -10%, var(--bp-bg-deep), var(--bp-bg) 60%);
+}
+
+.blueprint-mono {
+  font-family: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+}
+
+@media print {
+  .blueprint-sheet {
+    background: white !important;
+  }
+}
