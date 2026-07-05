@@ -3,10 +3,10 @@ import type { ProfileData } from "@/lib/types";
 const myProfile: ProfileData = {
   name: "Mohammad Ilham bin Kassim",
   headline:
-    "Computer Engineering Senior @ Penn State | MARA YTP Scholar | Data Structures & Algorithms | AI & Systems Programming | Leadership & Innovation",
+    "Computer Engineering Graduate (Penn State) | MARA YTP Scholar | Data Structures & Algorithms | AI & Systems Programming | Leadership & Innovation",
   location: "Papar, Sabah, Malaysia",
   summary:
-    "I like building things that make life a little easier to navigate. Currently finishing my Computer Engineering degree at Penn State, I've found that I'm most interested in where technical systems meet community needs. From working on technical operations here at the university to experimenting with truth-checking tools, I just enjoy solving puzzles that have a real-world impact.",
+    "I like building things that make life a little easier to navigate. Having just graduated with my Computer Engineering degree from Penn State, I've found that I'm most interested in where technical systems meet community needs. From working on technical operations here at the university to experimenting with truth-checking tools, I just enjoy solving puzzles that have a real-world impact.",
   experience: [
     {
       company: "Penn State University – Division of Development and Alumni Relations",
