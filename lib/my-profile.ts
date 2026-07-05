@@ -179,47 +179,50 @@ const myProfile: ProfileData = {
       name: "Reber Building Virtual Tour (Kinetic Engineering Collective)",
       role: "Lead Developer",
       description:
-        "Web-based interactive showcase and 360° virtual tour of the redesigned Mechanical Engineering hallway in the Reber Building at Penn State. Built as a Capstone project with a Penn State-branded SPA dashboard, Pannellum-powered multi-scene panoramic viewer, and an animated budget tracker.",
+        "Web-based interactive showcase and 360° virtual tour of the redesigned Mechanical Engineering hallway in the Reber Building at Penn State. Built as a Capstone project with a Penn State-branded SPA dashboard, a Pannellum-powered 4-scene panoramic viewer, and an animated budget tracker.",
       bullets: [
-        "Engineered a 360° virtual tour across 2 redesigned hallways with a Pannellum-powered multi-scene panoramic viewer, presented to 100+ institutional stakeholders",
+        "Engineered a 360° virtual tour of a redesigned hallway with a Pannellum-powered 4-scene panoramic viewer, presented to 100+ institutional stakeholders",
         "Built a Penn State-branded SPA dashboard integrating the panoramic tour with an animated budget tracker to replace physical exhibition space",
       ],
+      url: "https://github.com/IlhamKassim/showcase-website",
       technologies: ["JavaScript", "HTML5", "CSS", "Pannellum", "Single Page Applications"],
     },
     {
       name: "Personal Portfolio Website",
       role: "Full-Stack Developer",
       description:
-        "A modern, responsive personal portfolio built with Next.js 14 App Router, TypeScript, and Tailwind CSS. Features dark mode, Framer Motion animations, and responsive design.",
+        "A modern, responsive personal portfolio built with Next.js 14 App Router, TypeScript, and Tailwind CSS. Features dark mode, Framer Motion animations, SEO metadata (sitemap, robots.txt, OpenGraph), and accessibility support.",
       bullets: [
-        "Full-Stack Web Development: Built a modern, responsive portfolio using Next.js 14 App Router, TypeScript, and Tailwind CSS, featuring dark mode and full responsive design.",
-        "Interactive UI Design: Integrated Framer Motion animations to deliver smooth, engaging user experiences across all device sizes.",
+        "Built a responsive portfolio using Next.js 14 App Router, TypeScript, and Tailwind CSS with dark mode and a resume-download page",
+        "Implemented SEO (sitemap, robots.txt, OpenGraph) and accessibility (ARIA labels, keyboard navigation) alongside Framer Motion animations",
       ],
-      url: "https://ilham-portfolio-yl2x.vercel.app/",
+      url: "https://ilham-portfolio-three.vercel.app",
       technologies: ["Next.js", "TypeScript", "Tailwind CSS", "Framer Motion"],
     },
     {
       name: "Social Nutrition Label",
       role: "Developer & Designer",
       description:
-        "A Chrome Extension 'Nutrition Label' for social media that uses the Gemini API to analyze post credibility, factual alignment, and visual integrity to combat misinformation.",
+        "A Chrome Extension 'Nutrition Label' for social media that scrapes a post and routes it through Supabase to a worker running the Gemini API (with Google Search grounding) to score credibility, factual alignment, and visual integrity.",
       bullets: [
-        "Developed a Chrome Extension using the Gemini API to analyze social media post credibility, achieving 80% accuracy across 100 test posts",
-        "Leveraged the Google Search API to cross-reference post content and deliver real-time misinformation scoring directly in the browser",
+        "Built a Chrome Extension and worker pipeline using Supabase as a job queue, with the Gemini API (Google Search-grounded) scoring post credibility and factual alignment",
+        "Designed a post-hash caching layer in Supabase to reuse prior analysis results and avoid redundant Gemini calls, validated against hand-tested sample posts during development",
       ],
       url: "https://github.com/IlhamKassim/laila-coders",
-      technologies: ["Gemini API", "Google Search API", "JavaScript", "Chrome Extension"],
+      technologies: ["Gemini API", "Supabase", "Google Search API", "JavaScript", "Chrome Extension"],
     },
     {
       name: "Shariah Algo Trader",
       role: "Independent Fintech Developer",
       description:
-        "An algorithmic trading bot that operates exclusively within a Shariah-compliant equity universe, taking long-only spot positions with no leverage. Holds top-20 stocks by equal-weighted Momentum and Quality Factor z-scores drawn from the eligible universe of a Shariah-compliant ETF (SPUS).",
+        "A full-stack algorithmic trading system that operates exclusively within a Shariah-compliant equity universe, taking long-only spot positions with no leverage. Holds top-20 stocks by equal-weighted Momentum and Quality Factor z-scores drawn from the eligible universe of a Shariah-compliant ETF (SPUS), with a live FastAPI + React monitoring dashboard.",
       bullets: [
-        "Engineered a quantitative trading bot on a $100K paper portfolio currently outperforming the S&P 500 by 2.5% and the SPUS ETF by 5% within the first week of live trading",
+        "Engineered a quantitative trading bot on a $100K paper portfolio via the Alpaca API, currently outperforming the S&P 500 by 2.5% and the SPUS ETF by 5% within the first week of live trading",
+        "Built a FastAPI backend and React/TypeScript dashboard for real-time portfolio, compliance, and factor-ranking visibility, deployed live with a pytest-covered test suite",
         "Applied Momentum and Quality Factor z-scoring with Pandas and Scikit-Learn to rank and hold top-20 Shariah-compliant equities from the SPUS universe",
       ],
-      technologies: ["Python", "Pandas", "Scikit-Learn", "Quantitative Investing"],
+      url: "https://shariah-algo-trader.onrender.com",
+      technologies: ["Python", "FastAPI", "React", "TypeScript", "Alpaca API", "Pandas", "Scikit-Learn"],
     },
     {
       name: "Computer Architecture Design Space Explorer",
@@ -261,7 +264,7 @@ const myProfile: ProfileData = {
     email: "ilhamkassim2003@gmail.com",
     phone: "+60 17-528 4805",
     location: "Papar, Sabah, Malaysia",
-    website: "https://ilham-portfolio-yl2x.vercel.app/",
+    website: "https://ilham-portfolio-three.vercel.app",
     linkedin: "https://www.linkedin.com/in/ilhamkassim",
   },
 };
