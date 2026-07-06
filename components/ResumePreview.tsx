@@ -50,14 +50,21 @@ export const ResumePreview = forwardRef<HTMLDivElement, Props>(function ResumePr
   // Editable fields commit through `onEdit`; URL fields (linkedin/website/github/project.url)
   // are intentionally left non-editable so a stray edit can't break Zod's url() validation
   // when the resume is reloaded from sessionStorage.
+  //
+  // `className` MUST be passed here (not as a separate JSX attribute) — editableProps
+  // returns its own className, and a sibling className attribute would be silently
+  // overwritten by whichever one appears later in the spread, not merged with it.
   function edit(
     path: FieldPath,
     value: string,
-    opts?: { multiline?: boolean; className?: string; transform?: (raw: string) => string | string[] }
+    className: string,
+    opts?: { multiline?: boolean; transform?: (raw: string) => string | string[] }
   ) {
-    if (!onEdit) return {};
-    const { transform, ...rest } = opts ?? {};
-    return editableProps(value, (v) => onEdit(path, transform ? transform(v) : v), rest);
+    if (!onEdit) return { className };
+    return editableProps(value, (v) => onEdit(path, opts?.transform ? opts.transform(v) : v), {
+      multiline: opts?.multiline,
+      className,
+    });
   }
 
   return (
@@ -67,20 +74,23 @@ export const ResumePreview = forwardRef<HTMLDivElement, Props>(function ResumePr
       {/* Header — name centered 14pt, contact 3-column */}
       <div className="mb-[6px]">
         <h1
-          className="text-[14pt] font-bold text-center text-[#111111] mb-[3px] leading-tight"
-          {...edit(["contact", "name"], data.contact.name)}
+          {...edit(
+            ["contact", "name"],
+            data.contact.name,
+            "text-[14pt] font-bold text-center text-[#111111] mb-[3px] leading-tight"
+          )}
         >
           {data.contact.name}
         </h1>
         <div className="flex justify-between text-[9.5pt] text-[#333333]">
-          <span className="flex-1 text-left" {...edit(["contact", "email"], left)}>{left}</span>
-          <span className="flex-1 text-center" {...edit(["contact", "phone"], center)}>{center}</span>
+          <span {...edit(["contact", "email"], left, "flex-1 text-left")}>{left}</span>
+          <span {...edit(["contact", "phone"], center, "flex-1 text-center")}>{center}</span>
           <span className="flex-1 text-right">{right}</span>
         </div>
         {extras.length > 0 && (
           <p className="text-[9.5pt] text-[#333333] text-center mt-[1px]">
             {data.contact.location && (
-              <span {...edit(["contact", "location"], data.contact.location)}>{data.contact.location}</span>
+              <span {...edit(["contact", "location"], data.contact.location, "")}>{data.contact.location}</span>
             )}
             {data.contact.location && data.contact.github ? "  ·  " : ""}
             {data.contact.github}
@@ -91,7 +101,7 @@ export const ResumePreview = forwardRef<HTMLDivElement, Props>(function ResumePr
       {/* Summary */}
       {data.summary && (
         <Section title="Summary">
-          <p className="text-[10pt] leading-[1.3]" {...edit(["summary"], data.summary, { multiline: true })}>
+          <p {...edit(["summary"], data.summary, "text-[10pt] leading-[1.3]", { multiline: true })}>
             {data.summary}
           </p>
         </Section>
@@ -102,15 +112,12 @@ export const ResumePreview = forwardRef<HTMLDivElement, Props>(function ResumePr
         <Section title="Skills">
           {data.skills.map((cat, i) => (
             <div key={i} className={i < data.skills.length - 1 ? "mb-[1px]" : ""}>
-              <span
-                className="font-bold"
-                {...edit(["skills", i, "category"], cat.category)}
-              >
+              <span {...edit(["skills", i, "category"], cat.category, "font-bold")}>
                 {cat.category}
               </span>
               <span>: </span>
               <span
-                {...edit(["skills", i, "items"], cat.items.join("  ·  "), {
+                {...edit(["skills", i, "items"], cat.items.join("  ·  "), "", {
                   multiline: true,
                   transform: splitJoined,
                 })}
@@ -128,23 +135,17 @@ export const ResumePreview = forwardRef<HTMLDivElement, Props>(function ResumePr
           {data.experience.map((job, i) => (
             <div key={i} className={i < data.experience.length - 1 ? "mb-[8px]" : ""}>
               <div className="flex justify-between items-baseline">
-                <span
-                  className="font-bold text-[#111111]"
-                  {...edit(["experience", i, "title"], job.title)}
-                >
+                <span {...edit(["experience", i, "title"], job.title, "font-bold text-[#111111]")}>
                   {job.title}
                 </span>
                 {job.location && (
-                  <span
-                    className="text-[#333333]"
-                    {...edit(["experience", i, "location"], job.location)}
-                  >
+                  <span {...edit(["experience", i, "location"], job.location, "text-[#333333]")}>
                     {job.location}
                   </span>
                 )}
               </div>
               <div className="flex justify-between items-baseline mb-[2px]">
-                <span className="font-bold" {...edit(["experience", i, "company"], job.company)}>
+                <span {...edit(["experience", i, "company"], job.company, "font-bold")}>
                   {job.company}
                 </span>
                 <span className="text-[#333333]">{dateRange(job.startDate, job.endDate)}</span>
@@ -154,8 +155,7 @@ export const ResumePreview = forwardRef<HTMLDivElement, Props>(function ResumePr
                   <li key={j} className="flex gap-[10px] mb-[1.5px]">
                     <span className="text-[#333333] shrink-0">•</span>
                     <span
-                      className="leading-[1.2]"
-                      {...edit(["experience", i, "bullets", j], bullet, { multiline: true })}
+                      {...edit(["experience", i, "bullets", j], bullet, "leading-[1.2]", { multiline: true })}
                     >
                       {bullet}
                     </span>
@@ -172,7 +172,7 @@ export const ResumePreview = forwardRef<HTMLDivElement, Props>(function ResumePr
         <Section title="Education">
           {data.education.map((edu, i) => (
             <div key={i} className={i < data.education.length - 1 ? "mb-[6px]" : ""}>
-              <span className="font-bold text-[#111111]" {...edit(["education", i, "school"], edu.school)}>
+              <span {...edit(["education", i, "school"], edu.school, "font-bold text-[#111111]")}>
                 {edu.school}
               </span>
               <div className="flex justify-between items-baseline mb-[1px]">
@@ -183,8 +183,7 @@ export const ResumePreview = forwardRef<HTMLDivElement, Props>(function ResumePr
               </div>
               {edu.description && (
                 <p
-                  className="text-[9.5pt] text-[#555555]"
-                  {...edit(["education", i, "description"], edu.description, { multiline: true })}
+                  {...edit(["education", i, "description"], edu.description, "text-[9.5pt] text-[#555555]", { multiline: true })}
                 >
                   {edu.description}
                 </p>
@@ -198,8 +197,7 @@ export const ResumePreview = forwardRef<HTMLDivElement, Props>(function ResumePr
       {data.certifications && data.certifications.length > 0 && (
         <Section title="Certifications">
           <p
-            className="text-[10pt] leading-[1.3]"
-            {...edit(["certifications"], data.certifications.join("  ·  "), {
+            {...edit(["certifications"], data.certifications.join("  ·  "), "text-[10pt] leading-[1.3]", {
               multiline: true,
               transform: splitJoined,
             })}
@@ -215,19 +213,13 @@ export const ResumePreview = forwardRef<HTMLDivElement, Props>(function ResumePr
           {data.projects.map((project, i) => (
             <div key={i} className={i < data.projects.length - 1 ? "mb-[8px]" : ""}>
               <div className="flex justify-between items-baseline">
-                <span
-                  className="font-bold text-[#111111]"
-                  {...edit(["projects", i, "name"], project.name)}
-                >
+                <span {...edit(["projects", i, "name"], project.name, "font-bold text-[#111111]")}>
                   {project.name}
                 </span>
                 {project.url && <span className="text-[9.5pt] text-[#555555]">{displayUrl(project.url)}</span>}
               </div>
               {project.role && (
-                <p
-                  className="text-[10pt] text-[#333333] mb-[2px]"
-                  {...edit(["projects", i, "role"], project.role)}
-                >
+                <p {...edit(["projects", i, "role"], project.role, "text-[10pt] text-[#333333] mb-[2px]")}>
                   {project.role}
                 </p>
               )}
@@ -237,8 +229,7 @@ export const ResumePreview = forwardRef<HTMLDivElement, Props>(function ResumePr
                     <li key={j} className="flex gap-[10px] mb-[1.5px]">
                       <span className="text-[#333333] shrink-0">•</span>
                       <span
-                        className="leading-[1.2]"
-                        {...edit(["projects", i, "bullets", j], bullet, { multiline: true })}
+                        {...edit(["projects", i, "bullets", j], bullet, "leading-[1.2]", { multiline: true })}
                       >
                         {bullet}
                       </span>
@@ -247,8 +238,7 @@ export const ResumePreview = forwardRef<HTMLDivElement, Props>(function ResumePr
                 </ul>
               ) : project.description ? (
                 <p
-                  className="text-[10pt] leading-[1.3] mt-[1px]"
-                  {...edit(["projects", i, "description"], project.description, { multiline: true })}
+                  {...edit(["projects", i, "description"], project.description, "text-[10pt] leading-[1.3] mt-[1px]", { multiline: true })}
                 >
                   {project.description}
                 </p>

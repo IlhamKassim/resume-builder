@@ -22,9 +22,12 @@ export const CoverLetterPreview = forwardRef<HTMLDivElement, Props>(function Cov
 ) {
   const contactLine = [contact.email, contact.phone, contact.location].filter(Boolean).join("  ·  ");
 
-  function edit(path: FieldPath, value: string, opts?: { multiline?: boolean; className?: string }) {
-    if (!onEdit) return {};
-    return editableProps(value, (v) => onEdit(path, v), opts);
+  // `className` MUST be passed here (not as a separate JSX attribute) — editableProps
+  // returns its own className, and a sibling className attribute would be silently
+  // overwritten by whichever one appears later in the spread, not merged with it.
+  function edit(path: FieldPath, value: string, className: string, opts?: { multiline?: boolean }) {
+    if (!onEdit) return { className };
+    return editableProps(value, (v) => onEdit(path, v), { ...opts, className });
   }
 
   return (
@@ -41,21 +44,20 @@ export const CoverLetterPreview = forwardRef<HTMLDivElement, Props>(function Cov
 
       <p className="text-[10pt] mb-[16px]">{todayFormatted()}</p>
 
-      <p className="text-[10pt] mb-[12px]" {...edit(["greeting"], data.greeting)}>
+      <p {...edit(["greeting"], data.greeting, "text-[10pt] mb-[12px]")}>
         {data.greeting}
       </p>
 
       {data.paragraphs.map((paragraph, i) => (
         <p
           key={i}
-          className="text-[10pt] mb-[12px] leading-[1.4]"
-          {...edit(["paragraphs", i], paragraph, { multiline: true })}
+          {...edit(["paragraphs", i], paragraph, "text-[10pt] mb-[12px] leading-[1.4]", { multiline: true })}
         >
           {paragraph}
         </p>
       ))}
 
-      <p className="text-[10pt] mb-[2px]" {...edit(["signOff"], data.signOff)}>
+      <p {...edit(["signOff"], data.signOff, "text-[10pt] mb-[2px]")}>
         {data.signOff}
       </p>
       <p className="text-[10pt] font-bold">{contact.name}</p>
