@@ -75,7 +75,7 @@ export const TailorRequestSchema = z.object({
 
 export const CoverLetterDataSchema = z.object({
   greeting: z.string().min(1),
-  paragraphs: z.array(z.string().min(1)).min(2).max(4),
+  paragraphs: z.array(z.string().min(1)).length(3),
   signOff: z.string().min(1),
 });
 

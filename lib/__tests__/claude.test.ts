@@ -207,8 +207,9 @@ describe("tailorResume", () => {
 const validCoverLetterOutput = {
   greeting: "Dear Hiring Manager,",
   paragraphs: [
-    "I'm drawn to this role because of its focus on AI-driven systems, which lines up directly with my experience evaluating generative AI tools for Penn State's fundraising division.",
-    "In that role I evaluated generative AI and predictive modeling tools and validated a CRM data migration, giving me hands-on exposure to shipping AI-adjacent tools in a real organization.",
+    "At Penn State's DDAR office, I evaluated generative AI and predictive modeling tools that now inform how the Division approaches fundraising technology — the same kind of AI-adjacent problem this role is hiring for.",
+    "In that role I audited an AWA-to-Salesforce CRM data migration, validating over 100 high-value prospect records to ensure zero data loss during the transition.",
+    "This role's focus on AI/LLM APIs and automated testing lines up directly with the tailoring pipeline and Zod-validated schemas I've since built to guarantee structured, reliable output.",
   ],
   signOff: "Sincerely,",
 };
@@ -260,6 +261,20 @@ describe("generateCoverLetter", () => {
   it("throws when Claude returns JSON that fails CoverLetterData schema", async () => {
     mockCreate.mockResolvedValueOnce({
       content: [{ type: "text", text: JSON.stringify({ greeting: "Hi," }) }],
+    });
+
+    const { generateCoverLetter } = await import("../claude");
+    await expect(generateCoverLetter(profileFixture, jobDescriptionFixture)).rejects.toThrow();
+  });
+
+  it("rejects a paragraph count other than exactly 3", async () => {
+    mockCreate.mockResolvedValueOnce({
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify({ ...validCoverLetterOutput, paragraphs: validCoverLetterOutput.paragraphs.slice(0, 2) }),
+        },
+      ],
     });
 
     const { generateCoverLetter } = await import("../claude");

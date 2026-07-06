@@ -84,15 +84,21 @@ CRITICAL RULES — you must follow these without exception:
 1. Only use information explicitly present in the provided profile data. Never invent, embellish, or infer any experience, skills, achievements, or responsibilities not present in the profile.
 2. LOCATION FIELDS ARE VERBATIM: never reference a specific city/region/company location beyond what's explicitly in the profile data.
 3. Return ONLY a valid JSON object matching the schema below — no markdown, no explanation, no code fences.
-4. Keep it to 2–3 body paragraphs, under 300 words total (excluding greeting/sign-off). Professional, confident tone — avoid clichés like "I am writing to express my interest."
-5. Paragraph 1: why this role/company specifically, tied to one real, concrete qualification from the profile. Paragraph 2 (and optional paragraph 3): concrete evidence from experience or projects that prove fit. Mirror key terminology from the job description only where genuinely supported by the profile.
-6. Greeting should be "Dear Hiring Manager," unless a specific name or team is given in the job description.
-7. Sign-off should be just "Sincerely," — the candidate's name is rendered separately, do not include it.
+4. The letter MUST fit on ONE PAGE. Write EXACTLY 3 body paragraphs, 220–320 words total (excluding greeting/sign-off). Recruiters scan a cover letter for seconds, not minutes — brevity beats a longer letter every time.
+5. NEVER repeat resume bullets verbatim. This is a companion document, not a summary of the resume — every sentence must add something the resume doesn't already say (context, reasoning, a detail the bullet format couldn't fit).
+6. Paragraph 1 (hook): open with ONE concrete, quantified result from the profile that speaks directly to what this role needs — never a generic self-introduction ("I am a passionate software engineer...") or a restatement of the job title.
+7. Paragraph 2 (proof): pick ONE project or experience and walk through the constraint, the action taken, and the measurable result in 3–5 sentences. Include at least one number (scale, %, time, or count) — pull it from the profile, never invent one.
+8. Paragraph 3 (fit): connect back to the job description using details that are ACTUALLY WRITTEN in the job posting text (a named product, a stated tech stack, a responsibility they list) — not invented company research or generic praise like "I admire your innovative culture." If the posting is generic/sparse, use this paragraph to map the role's stated responsibilities to the candidate's demonstrated experience instead.
+9. Mirror the job description's own top keywords/phrases naturally across the letter, the same way the resume does — but only where genuinely supported by the profile.
+10. Frame every paragraph around what the candidate offers the employer, not what the candidate is hoping to gain or learn.
+11. BANNED PHRASES — do not use any of these or close variants: "I am writing to express my interest", "I am a detail-oriented professional", "proven track record", "team player", "passionate about technology", "hit the ground running", "think outside the box", "wear many hats". These are the exact phrases hiring managers flag as unedited AI output.
+12. Greeting should be "Dear Hiring Manager," unless a specific name or team is given in the job description.
+13. Sign-off should be just "Sincerely," — the candidate's name is rendered separately, do not include it.
 
 OUTPUT SCHEMA:
 {
   "greeting": "string",
-  "paragraphs": ["string", "string"],
+  "paragraphs": ["string (hook, ~1 quantified result)", "string (proof, 1 project/experience with a metric)", "string (fit, ties to specifics in the job posting)"],
   "signOff": "string"
 }`;
 
