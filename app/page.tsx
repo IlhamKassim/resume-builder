@@ -9,29 +9,35 @@ import { BlueprintPipeline } from "@/components/BlueprintPipeline";
 import myProfile from "@/lib/my-profile";
 
 // Claude Sonnet 4.6 pricing (per million tokens)
-const PRICE_INPUT_PER_M  = 3.00;
-const PRICE_OUTPUT_PER_M = 15.00;
+const PRICE_INPUT_PER_M        = 3.00;
+const PRICE_CACHE_WRITE_PER_M  = 3.75; // 1.25x base — writing the 5-minute cache
+const PRICE_CACHE_READ_PER_M   = 0.30; // 0.1x base — reusing a cached prefix
+const PRICE_OUTPUT_PER_M       = 15.00;
 
 interface SessionUsage {
   inputTokens: number;
   outputTokens: number;
+  cacheCreationTokens: number;
+  cacheReadTokens: number;
   generations: number;
 }
 
 function cost(usage: SessionUsage): number {
   return (
-    (usage.inputTokens  / 1_000_000) * PRICE_INPUT_PER_M +
-    (usage.outputTokens / 1_000_000) * PRICE_OUTPUT_PER_M
+    (usage.inputTokens        / 1_000_000) * PRICE_INPUT_PER_M +
+    (usage.cacheCreationTokens / 1_000_000) * PRICE_CACHE_WRITE_PER_M +
+    (usage.cacheReadTokens    / 1_000_000) * PRICE_CACHE_READ_PER_M +
+    (usage.outputTokens       / 1_000_000) * PRICE_OUTPUT_PER_M
   );
 }
 
 function UsageBar({ usage }: { usage: SessionUsage }) {
-  const totalTokens = usage.inputTokens + usage.outputTokens;
+  const totalTokens = usage.inputTokens + usage.outputTokens + usage.cacheCreationTokens + usage.cacheReadTokens;
   const estimatedCost = cost(usage);
 
   return (
     <div className="border border-[var(--bp-panel-line)] px-4 py-3 flex items-center justify-between gap-4 blueprint-mono text-[11.5px]">
-      <div className="flex items-center gap-4 text-[var(--bp-line-dim)]">
+      <div className="flex items-center gap-4 text-[var(--bp-line-dim)] flex-wrap">
         <span>
           <span className="text-[var(--bp-line)] tabular-nums">{usage.generations}</span>
           {" "}generation{usage.generations !== 1 ? "s" : ""} this session
@@ -41,6 +47,15 @@ function UsageBar({ usage }: { usage: SessionUsage }) {
           <span className="text-[var(--bp-line)] tabular-nums">{totalTokens.toLocaleString()}</span>
           {" "}tokens used
         </span>
+        {usage.cacheReadTokens > 0 && (
+          <>
+            <span className="text-[var(--bp-panel-line)]">|</span>
+            <span>
+              <span className="text-[var(--bp-accent)] tabular-nums">{usage.cacheReadTokens.toLocaleString()}</span>
+              {" "}cached (90% off)
+            </span>
+          </>
+        )}
       </div>
       <span className="text-[var(--bp-line-dim)]">
         ~<span className="text-[var(--bp-accent)] tabular-nums">${estimatedCost.toFixed(4)}</span> spent
@@ -76,9 +91,11 @@ export default function Home() {
 
       if (data._usage) {
         setSessionUsage((prev) => ({
-          inputTokens:  (prev?.inputTokens  ?? 0) + data._usage.inputTokens,
-          outputTokens: (prev?.outputTokens ?? 0) + data._usage.outputTokens,
-          generations:  (prev?.generations  ?? 0) + 1,
+          inputTokens:         (prev?.inputTokens         ?? 0) + data._usage.inputTokens,
+          outputTokens:        (prev?.outputTokens        ?? 0) + data._usage.outputTokens,
+          cacheCreationTokens: (prev?.cacheCreationTokens ?? 0) + (data._usage.cacheCreationTokens ?? 0),
+          cacheReadTokens:     (prev?.cacheReadTokens     ?? 0) + (data._usage.cacheReadTokens ?? 0),
+          generations:         (prev?.generations         ?? 0) + 1,
         }));
       }
 

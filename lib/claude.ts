@@ -134,6 +134,10 @@ async function callWithRetry(
 export interface TokenUsage {
   inputTokens: number;
   outputTokens: number;
+  /** Tokens written to the prompt cache this call (profile + system prompt), billed at 1.25x input price. */
+  cacheCreationTokens: number;
+  /** Tokens read from the prompt cache this call, billed at 0.1x input price. */
+  cacheReadTokens: number;
 }
 
 function mapClaudeCallError(err: unknown, action: string): never {
@@ -156,11 +160,14 @@ function mapClaudeCallError(err: unknown, action: string): never {
 async function callClaudeForJson<T>(opts: {
   action: string;
   system: string;
-  userMessage: string;
+  /** Large, identical across every call for this action (system context, profile data) — cached. */
+  cacheableContext: string;
+  /** Changes every call (the job description) — never cached. */
+  variableInput: string;
   maxTokens: number;
   schema: ZodType<T>;
 }): Promise<{ data: T; usage: TokenUsage }> {
-  const { action, system, userMessage, maxTokens, schema } = opts;
+  const { action, system, cacheableContext, variableInput, maxTokens, schema } = opts;
 
   let response: Anthropic.Message;
   try {
@@ -168,8 +175,16 @@ async function callClaudeForJson<T>(opts: {
       client.messages.create({
         model: process.env.ANTHROPIC_MODEL || "claude-sonnet-4-6",
         max_tokens: maxTokens,
-        system,
-        messages: [{ role: "user", content: userMessage }],
+        system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }],
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "text", text: cacheableContext, cache_control: { type: "ephemeral" } },
+              { type: "text", text: variableInput },
+            ],
+          },
+        ],
       })
     );
   } catch (err) {
@@ -207,6 +222,8 @@ async function callClaudeForJson<T>(opts: {
     usage: {
       inputTokens: response.usage.input_tokens,
       outputTokens: response.usage.output_tokens,
+      cacheCreationTokens: response.usage.cache_creation_input_tokens ?? 0,
+      cacheReadTokens: response.usage.cache_read_input_tokens ?? 0,
     },
   };
 }
@@ -215,10 +232,8 @@ export async function tailorResume(
   profile: ProfileData,
   jobDescription: string
 ): Promise<{ resume: ResumeData; usage: TokenUsage }> {
-  const userMessage = `PROFILE DATA:
-${JSON.stringify(profile, null, 2)}
-
-JOB DESCRIPTION:
+  const cacheableContext = `PROFILE DATA:\n${JSON.stringify(profile, null, 2)}`;
+  const variableInput = `JOB DESCRIPTION:
 ${jobDescription}
 
 Tailor the resume to this job description. Remember: only use facts from the profile data above.`;
@@ -226,7 +241,8 @@ Tailor the resume to this job description. Remember: only use facts from the pro
   const { data, usage } = await callClaudeForJson({
     action: "Resume generation",
     system: RESUME_SYSTEM_PROMPT,
-    userMessage,
+    cacheableContext,
+    variableInput,
     maxTokens: 4096,
     schema: ResumeDataSchema,
   });
@@ -238,10 +254,8 @@ export async function generateCoverLetter(
   profile: ProfileData,
   jobDescription: string
 ): Promise<{ coverLetter: CoverLetterData; usage: TokenUsage }> {
-  const userMessage = `PROFILE DATA:
-${JSON.stringify(profile, null, 2)}
-
-JOB DESCRIPTION:
+  const cacheableContext = `PROFILE DATA:\n${JSON.stringify(profile, null, 2)}`;
+  const variableInput = `JOB DESCRIPTION:
 ${jobDescription}
 
 Write a tailored cover letter for this job description. Remember: only use facts from the profile data above.`;
@@ -249,7 +263,8 @@ Write a tailored cover letter for this job description. Remember: only use facts
   const { data, usage } = await callClaudeForJson({
     action: "Cover letter generation",
     system: COVER_LETTER_SYSTEM_PROMPT,
-    userMessage,
+    cacheableContext,
+    variableInput,
     maxTokens: 1024,
     schema: CoverLetterDataSchema,
   });

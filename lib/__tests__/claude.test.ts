@@ -96,6 +96,44 @@ describe("tailorResume", () => {
     expect(JSON.stringify(userMessage.content)).toContain("Software Engineer Intern");
   });
 
+  it("caches the system prompt and profile data, but not the job description", async () => {
+    mockCreate.mockResolvedValueOnce({
+      content: [{ type: "text", text: JSON.stringify(validResumeOutput) }],
+      usage: { input_tokens: 100, output_tokens: 50 },
+    });
+
+    const { tailorResume } = await import("../claude");
+    await tailorResume(profileFixture, jobDescriptionFixture);
+
+    const callArgs = mockCreate.mock.calls[0][0];
+    expect(callArgs.system[0].cache_control).toEqual({ type: "ephemeral" });
+
+    const userMessage = callArgs.messages.find((m: { role: string }) => m.role === "user");
+    const [profileBlock, jobDescriptionBlock] = userMessage.content;
+    expect(profileBlock.cache_control).toEqual({ type: "ephemeral" });
+    expect(profileBlock.text).toContain("Mohammad Ilham bin Kassim");
+    expect(jobDescriptionBlock.cache_control).toBeUndefined();
+    expect(jobDescriptionBlock.text).toContain("Software Engineer Intern");
+  });
+
+  it("surfaces cache creation/read token counts from the API response", async () => {
+    mockCreate.mockResolvedValueOnce({
+      content: [{ type: "text", text: JSON.stringify(validResumeOutput) }],
+      usage: {
+        input_tokens: 40,
+        output_tokens: 50,
+        cache_creation_input_tokens: 3000,
+        cache_read_input_tokens: 0,
+      },
+    });
+
+    const { tailorResume } = await import("../claude");
+    const { usage } = await tailorResume(profileFixture, jobDescriptionFixture);
+
+    expect(usage.cacheCreationTokens).toBe(3000);
+    expect(usage.cacheReadTokens).toBe(0);
+  });
+
   it("throws when Claude returns invalid JSON", async () => {
     mockCreate.mockResolvedValueOnce({
       content: [{ type: "text", text: "Sorry, I cannot help with that." }],
@@ -162,7 +200,7 @@ describe("tailorResume", () => {
     await tailorResume(profileFixture, jobDescriptionFixture);
 
     const callArgs = mockCreate.mock.calls[0][0];
-    expect(callArgs.system.toLowerCase()).toMatch(/only|never invent|do not invent/);
+    expect(callArgs.system[0].text.toLowerCase()).toMatch(/only|never invent|do not invent/);
   });
 });
 
@@ -275,6 +313,6 @@ describe("generateCoverLetter", () => {
     await generateCoverLetter(profileFixture, jobDescriptionFixture);
 
     const callArgs = mockCreate.mock.calls[0][0];
-    expect(callArgs.system.toLowerCase()).toMatch(/only|never invent|do not invent/);
+    expect(callArgs.system[0].text.toLowerCase()).toMatch(/only|never invent|do not invent/);
   });
 });
