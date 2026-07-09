@@ -131,7 +131,7 @@ const myProfile: ProfileData = {
       startDate: "2022-08",
       endDate: "2026-05",
       description:
-        "Activities: Malaysia Students Club (External Vice President), The Borneo (Founding Member), Google Developer Club (Member)",
+        "Activities: Malaysia Students Club (External Vice President), The Borneo (Founding Member), Google Developer Club (Member). Relevant Coursework: Programming and Computation I, Programming and Computation II, Object-Oriented Programming with Web, Introduction to Systems Programming, Discrete Mathematics for Computer Science, Programming Language Concepts, Data Structures and Algorithms, Operating Systems, Machine Learning and AI, Digital Design, Computer Organization and Design, Communication Networks, Digital Integrated Circuits, Introduction to Computer Architecture, Digital Image Processing, Circuits and Devices, Electronic Circuit Design I, Signals and Systems, Probability and Stochastic Processes",
     },
     {
       school: "INTEC Education College",

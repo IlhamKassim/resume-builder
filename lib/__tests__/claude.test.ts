@@ -16,6 +16,11 @@ vi.mock("@anthropic-ai/sdk", async (importOriginal) => {
   return { ...actual, default: MockAnthropic };
 });
 
+// Tests must never write to the real usage-log.jsonl (it drives balance estimation).
+vi.mock("@/lib/usage-log", () => ({
+  logUsage: vi.fn(),
+}));
+
 const validResumeOutput = {
   contact: {
     name: "Mohammad Ilham bin Kassim",

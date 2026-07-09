@@ -1,0 +1,7 @@
+# Shared core prompt for cross-task cache sharing
+
+Anthropic's prompt cache key covers the full rendered prefix (`tools → system → messages`), so a cache breakpoint on the profile blob only reuses across calls if everything before it — including the system prompt — is byte-identical. The resume and cover-letter system prompts used to be two independent blocks of text, so even though both calls send the identical ~4,200-token profile JSON, the cover-letter call always paid full cache-write cost for it instead of a cheap cache-read (measured: $0.0247 vs a possible $0.0070, ~$0.018 wasted per resume+cover-letter pair — a meaningful fraction of a typical two-document session).
+
+Fixed by splitting each system prompt into a shared `CORE_RULES` block (no-hallucination, location-verbatim, JSON-only, punctuation — now byte-identical for both tasks, sent as the cached `system` block) and a per-task `*_TASK_INSTRUCTIONS` block (schema, formatting rules) that's concatenated with the job description in an uncached message block. This required minor rewording of a few rules (e.g. "matching the schema below" → "matching the schema given in the task instructions", since the schema no longer sits in the same block) — verified via `check:fidelity` + a manual read after the change, per the project's agreed verification process for prompt edits.
+
+**Rule for future prompt edits:** anything added to `CORE_RULES` must stay identical for both resume and cover-letter calls, or cache sharing silently breaks again.
