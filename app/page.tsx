@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { JobDescriptionInput } from "@/components/JobDescriptionInput";
@@ -8,11 +8,12 @@ import { BlueprintTitleBlock } from "@/components/BlueprintTitleBlock";
 import { BlueprintPipeline } from "@/components/BlueprintPipeline";
 import myProfile from "@/lib/my-profile";
 
-// Claude Sonnet 4.6 pricing (per million tokens)
-const PRICE_INPUT_PER_M        = 3.00;
-const PRICE_CACHE_WRITE_PER_M  = 3.75; // 1.25x base — writing the 5-minute cache
-const PRICE_CACHE_READ_PER_M   = 0.30; // 0.1x base — reusing a cached prefix
-const PRICE_OUTPUT_PER_M       = 15.00;
+// Claude Sonnet 5 INTRO pricing (per million tokens) — ends 2026-08-31, see lib/usage-log.ts
+// and docs/adr/0002-migrate-to-sonnet-5-despite-post-intro-price-increase.md.
+const PRICE_INPUT_PER_M        = 2.00;
+const PRICE_CACHE_WRITE_PER_M  = 2.50; // 1.25x base — writing the 5-minute cache
+const PRICE_CACHE_READ_PER_M   = 0.20; // 0.1x base — reusing a cached prefix
+const PRICE_OUTPUT_PER_M       = 10.00;
 
 interface SessionUsage {
   inputTokens: number;
@@ -20,6 +21,16 @@ interface SessionUsage {
   cacheCreationTokens: number;
   cacheReadTokens: number;
   generations: number;
+}
+
+interface AllTimeUsage {
+  generations: number;
+  cost: number;
+}
+
+interface Balance {
+  toppedUp: number;
+  estimatedRemaining: number;
 }
 
 function cost(usage: SessionUsage): number {
@@ -31,7 +42,7 @@ function cost(usage: SessionUsage): number {
   );
 }
 
-function UsageBar({ usage }: { usage: SessionUsage }) {
+function UsageBar({ usage, allTime }: { usage: SessionUsage; allTime: AllTimeUsage | null }) {
   const totalTokens = usage.inputTokens + usage.outputTokens + usage.cacheCreationTokens + usage.cacheReadTokens;
   const estimatedCost = cost(usage);
 
@@ -57,10 +68,38 @@ function UsageBar({ usage }: { usage: SessionUsage }) {
           </>
         )}
       </div>
-      <span className="text-[var(--bp-line-dim)]">
-        ~<span className="text-[var(--bp-accent)] tabular-nums">${estimatedCost.toFixed(4)}</span> spent
-      </span>
+      <div className="flex items-center gap-4 text-[var(--bp-line-dim)] shrink-0">
+        <span>
+          ~<span className="text-[var(--bp-accent)] tabular-nums">${estimatedCost.toFixed(4)}</span> spent
+        </span>
+        {allTime && (
+          <>
+            <span className="text-[var(--bp-panel-line)]">|</span>
+            <span>
+              <span className="text-[var(--bp-line)] tabular-nums">{allTime.generations}</span>
+              {" "}all-time · ~$
+              <span className="text-[var(--bp-line)] tabular-nums">{allTime.cost.toFixed(2)}</span>
+              {" "}total
+            </span>
+          </>
+        )}
+      </div>
     </div>
+  );
+}
+
+function BalanceLine({ balance }: { balance: Balance }) {
+  const low = balance.estimatedRemaining < 1;
+  return (
+    <p
+      className={`blueprint-mono text-[11px] tracking-[0.02em] ${
+        low ? "text-[var(--bp-accent)]" : "text-[var(--bp-line-dim)]"
+      }`}
+    >
+      ≈$<span className="tabular-nums">{balance.estimatedRemaining.toFixed(2)}</span>
+      {" "}est. balance remaining
+      {" "}(${balance.toppedUp.toFixed(2)} topped up so far — logged locally, not Anthropic&apos;s own figure)
+    </p>
   );
 }
 
@@ -69,7 +108,25 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [lastJobDescription, setLastJobDescription] = useState<string | null>(null);
   const [sessionUsage, setSessionUsage] = useState<SessionUsage | null>(null);
+  const [allTimeUsage, setAllTimeUsage] = useState<AllTimeUsage | null>(null);
+  const [balance, setBalance] = useState<Balance | null>(null);
   const router = useRouter();
+
+  async function refreshUsage() {
+    try {
+      const res = await fetch("/api/usage");
+      if (!res.ok) return;
+      const data = await res.json();
+      setAllTimeUsage({ generations: data.totals.generations, cost: data.totals.cost });
+      setBalance(data.balance);
+    } catch {
+      // Usage/balance are a nice-to-have; ignore fetch failures.
+    }
+  }
+
+  useEffect(() => {
+    refreshUsage();
+  }, []);
 
   async function handleGenerate(jobDescription: string) {
     setIsGenerating(true);
@@ -121,7 +178,8 @@ export default function Home() {
           subtitle="Paste a job description and get a tailored resume in seconds."
         />
 
-        <div className="flex justify-end mb-8 -mt-4">
+        <div className="flex justify-between items-center mb-8 -mt-4">
+          {balance ? <BalanceLine balance={balance} /> : <span />}
           <Link
             href="/jobs"
             className="blueprint-mono text-[11px] tracking-[0.06em] uppercase text-[var(--bp-label)] hover:text-[var(--bp-accent)] transition-colors underline underline-offset-2"
@@ -158,7 +216,7 @@ export default function Home() {
 
         {sessionUsage && (
           <div className="mt-4">
-            <UsageBar usage={sessionUsage} />
+            <UsageBar usage={sessionUsage} allTime={allTimeUsage} />
           </div>
         )}
 

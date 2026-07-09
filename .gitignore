@@ -47,5 +47,15 @@ Profile.csv
 # LinkedIn data exports (contain personal data)
 Basic_LinkedInDataExport_*/
 
+# Personal summary doc (contains PII, not for commit)
+ABOUT_ILHAM.md
+
 # Generated PDF output
 *.pdf
+
+# Persistent API usage log (local cost tracking, not for commit)
+usage-log.jsonl
+
+# Generated example resume/cover-letter output (goes stale immediately, duplicates
+# PII already in lib/my-profile.ts)
+/examples/
