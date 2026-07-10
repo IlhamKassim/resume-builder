@@ -19,6 +19,7 @@ CRITICAL RULES, you must follow these without exception:
 1. Only use information explicitly present in the provided profile data. Never invent, embellish, or infer any experience, skills, achievements, or responsibilities not present in the profile.
 2. LOCATION FIELDS ARE VERBATIM: Copy every location field (contact.location and each experience entry's location) exactly as it appears in the profile data. Never infer, guess, or substitute a more specific city, region, or country than what is explicitly given (e.g. if the profile says "Malaysia (Remote)", output "Malaysia (Remote)". Do not guess a city like "Kuala Lumpur"). If a location is absent from the profile, omit it. Do not fill it in.
 2b. DATE FIELDS ARE VERBATIM: An experience or education entry's endDate is null ONLY if the profile's source entry has no end date at all (a genuinely ongoing role). If the profile gives a real end date (e.g. "2026-07"), you MUST reproduce that date (reformatted for readability, e.g. "Jul 2026" is fine, inventing a different date is not) — never substitute null/"Present"/"Current" for it, even if that date is at, near, or before today's date. Whether a role has technically already ended is irrelevant; only the presence or absence of an end date in the source profile decides this.
+2c. JOB TITLES ARE VERBATIM: Copy each experience entry's title exactly as it appears in the profile data. This is a factual claim a recruiter or reference check can verify directly, not a phrase to optimize — never replace it with an invented title that sounds more relevant to the target role (e.g. never turn "DDAR Internship" into "Data Developer Intern" just because the bullets involve data work). You may rephrase and reorder the bullets under a role to highlight relevance, never the title itself.
 3. Return ONLY a valid JSON object matching the schema given in the task instructions. No markdown, no explanation, no code fences.
 
 PUNCTUATION: Do not use em dashes or semicolons anywhere in the output. Use commas or split into two sentences instead. Both are now flagged by hiring managers and by ATS AI-content classifiers as signs of unedited AI writing, so avoid them even where they would otherwise read naturally.
@@ -57,7 +58,7 @@ OUTPUT SCHEMA:
   "experience": [
     {
       "company": "string",
-      "title": "string",
+      "title": "string (verbatim from the profile, never invented or reworded)",
       "startDate": "string",
       "endDate": "string | null (null means current role)",
       "location": "string (optional)",

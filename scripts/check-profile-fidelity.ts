@@ -70,6 +70,11 @@ function checkResume(resume: ResumeData, label: string): Violation[] {
   const companyToLocation = new Map(
     myProfile.experience.map((e) => [norm(e.company), e.location ?? null])
   );
+  // Keyed by company+title pair, not company alone — several profile entries share the
+  // same company (e.g. "Penn State University") with different titles.
+  const validCompanyTitlePairs = new Set(
+    myProfile.experience.map((e) => `${norm(e.company)}|${norm(e.title)}`)
+  );
   const profileProjectNames = new Set(myProfile.projects.map((p) => norm(p.name)));
   const profileCerts = new Set((myProfile.certifications ?? []).map(norm));
   const profileSchools = new Set(myProfile.education.map((e) => norm(e.school)));
@@ -99,7 +104,7 @@ function checkResume(resume: ResumeData, label: string): Violation[] {
   ].join(" \n ");
   const sourceNumbers = new Set(extractNumericTokens(sourceTextCorpus).map(norm));
 
-  // 1 & 2: experience company + location fidelity
+  // 1 & 2: experience company + title + location fidelity
   for (const exp of resume.experience) {
     if (!profileCompanies.has(norm(exp.company))) {
       violations.push({
@@ -107,6 +112,12 @@ function checkResume(resume: ResumeData, label: string): Violation[] {
         message: `Generated company "${exp.company}" not found in profile experience entries`,
       });
       continue;
+    }
+    if (!validCompanyTitlePairs.has(`${norm(exp.company)}|${norm(exp.title)}`)) {
+      violations.push({
+        category: "experience.title",
+        message: `Title "${exp.title}" at "${exp.company}" does not match any profile entry for that company`,
+      });
     }
     if (exp.location) {
       const sourceLocation = companyToLocation.get(norm(exp.company));
