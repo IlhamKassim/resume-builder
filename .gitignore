@@ -59,3 +59,7 @@ usage-log.jsonl
 # Generated example resume/cover-letter output (goes stale immediately, duplicates
 # PII already in lib/my-profile.ts)
 /examples/
+
+# Real profile data (name, contact info, work history) — not for commit.
+# Copy lib/my-profile.example.ts to lib/my-profile.ts and fill in your own data.
+lib/my-profile.ts
