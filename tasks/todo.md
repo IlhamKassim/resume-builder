@@ -50,7 +50,7 @@
 - [x] `lib/usage-log.ts` + `usage-log.jsonl` (gitignored) — per-call token/cost logging
 - [x] `app/api/usage/route.ts`, `scripts/log-topup.ts`, `scripts/log-adjustment.ts` — running balance tracking
 
-## Slice 8 — Error Handling + Fallbacks
-- [ ] Claude API error → retry with data preserved
-- [ ] Zod validation failure → user-facing error + retry
-- [ ] No unhandled promise rejections in any error scenario
+## Slice 8 — Error Handling + Fallbacks ✅
+- [x] Claude API error → retry with data preserved (`mapClaudeCallError` in `lib/claude.ts`; retry button in `app/page.tsx` preserves `lastJobDescription`)
+- [x] Zod validation failure → user-facing error + retry (`TailoringError` surfaced as a 422 with a readable message, same retry path)
+- [x] No unhandled promise rejections in any error scenario (`handleGenerate`'s try/catch/finally covers the full async chain)

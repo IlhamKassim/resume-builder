@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { readUsageLog } from "@/lib/usage-log";
+import { readUsageLog, isPricingStale } from "@/lib/usage-log";
 
 export async function GET() {
   const entries = await readUsageLog();
@@ -36,6 +36,7 @@ export async function GET() {
       topups.length > 0
         ? { toppedUp, estimatedRemaining: toppedUp - totals.cost + adjusted }
         : null,
+    pricingStale: isPricingStale(),
     entries,
   });
 }

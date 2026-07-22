@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { TailorRequestSchema } from "@/lib/types";
+import { CoverLetterRequestSchema } from "@/lib/types";
 import { generateCoverLetter, TailoringError } from "@/lib/claude";
 
 export async function POST(req: NextRequest) {
@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON in request body." }, { status: 400 });
   }
 
-  const parsed = TailorRequestSchema.safeParse(body);
+  const parsed = CoverLetterRequestSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
       { error: "Invalid request. Please provide a valid profile and job description." },
@@ -21,7 +21,8 @@ export async function POST(req: NextRequest) {
   try {
     const { coverLetter, usage } = await generateCoverLetter(
       parsed.data.profile,
-      parsed.data.jobDescription
+      parsed.data.jobDescription,
+      parsed.data.resume
     );
     return NextResponse.json({ ...coverLetter, _usage: usage });
   } catch (err) {

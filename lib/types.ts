@@ -73,6 +73,14 @@ export const TailorRequestSchema = z.object({
   jobDescription: z.string().min(1),
 });
 
+export const CoverLetterRequestSchema = z.object({
+  profile: ProfileDataSchema,
+  jobDescription: z.string().min(1),
+  // The already-generated tailored resume, so the model knows what content is "already said"
+  // and can be told not to repeat it. Optional for backward compatibility with older callers.
+  resume: ResumeDataSchema.optional(),
+});
+
 export const CoverLetterDataSchema = z.object({
   greeting: z.string().min(1),
   paragraphs: z.array(z.string().min(1)).length(3),
@@ -88,3 +96,4 @@ export type ProfileData = z.infer<typeof ProfileDataSchema>;
 export type ResumeData = z.infer<typeof ResumeDataSchema>;
 export type TailorRequest = z.infer<typeof TailorRequestSchema>;
 export type CoverLetterData = z.infer<typeof CoverLetterDataSchema>;
+export type CoverLetterRequest = z.infer<typeof CoverLetterRequestSchema>;
