@@ -110,6 +110,7 @@ export default function Home() {
   const [sessionUsage, setSessionUsage] = useState<SessionUsage | null>(null);
   const [allTimeUsage, setAllTimeUsage] = useState<AllTimeUsage | null>(null);
   const [balance, setBalance] = useState<Balance | null>(null);
+  const [pricingStale, setPricingStale] = useState(false);
   const router = useRouter();
 
   async function refreshUsage() {
@@ -119,6 +120,7 @@ export default function Home() {
       const data = await res.json();
       setAllTimeUsage({ generations: data.totals.generations, cost: data.totals.cost });
       setBalance(data.balance);
+      setPricingStale(Boolean(data.pricingStale));
     } catch {
       // Usage/balance are a nice-to-have; ignore fetch failures.
     }
@@ -156,9 +158,10 @@ export default function Home() {
         }));
       }
 
-      const { _usage: _, ...resumeData } = data;
+      const { _usage: _, _fidelityWarnings, ...resumeData } = data;
       sessionStorage.setItem("resumeData", JSON.stringify(resumeData));
       sessionStorage.setItem("jobDescription", jobDescription);
+      sessionStorage.setItem("fidelityWarnings", JSON.stringify(_fidelityWarnings ?? []));
       sessionStorage.removeItem("coverLetterData");
       router.push("/preview");
     } catch {
@@ -177,6 +180,13 @@ export default function Home() {
           title="Automated Résumé Tailoring Apparatus"
           subtitle="Paste a job description and get a tailored resume in seconds."
         />
+
+        {pricingStale && (
+          <div className="border border-[var(--bp-accent)] p-3 mb-4 blueprint-mono text-[11px]">
+            ⚠ Pricing constants past their known-good date (2026-08-31) — cost/balance figures
+            below may be wrong. See docs/adr/0002-migrate-to-sonnet-5-despite-post-intro-price-increase.md.
+          </div>
+        )}
 
         <div className="flex justify-between items-center mb-8 -mt-4">
           {balance ? <BalanceLine balance={balance} /> : <span />}

@@ -19,8 +19,11 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { resume, usage } = await tailorResume(parsed.data.profile, parsed.data.jobDescription);
-    return NextResponse.json({ ...resume, _usage: usage });
+    const { resume, usage, fidelityWarnings } = await tailorResume(
+      parsed.data.profile,
+      parsed.data.jobDescription
+    );
+    return NextResponse.json({ ...resume, _usage: usage, _fidelityWarnings: fidelityWarnings });
   } catch (err) {
     if (err instanceof TailoringError) {
       return NextResponse.json({ error: err.message }, { status: 422 });
