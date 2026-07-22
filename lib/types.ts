@@ -61,7 +61,10 @@ export const ProfileDataSchema = z.object({
 export const ResumeDataSchema = z.object({
   contact: ContactSchema.extend({ name: z.string().min(1) }),
   summary: z.string().min(1),
-  experience: z.array(ResumeExperienceSchema).min(1).max(3),
+  // Max 3 is the one-page US/technical-track default; the prompt allows up to 5 for a 2-page
+  // banking/SG-MY-UK-style resume when the job posting signals that market — see
+  // docs/adr/0006-market-aware-resume-length-via-prompt-inference.md.
+  experience: z.array(ResumeExperienceSchema).min(1).max(5),
   education: z.array(EducationSchema),
   skills: z.array(SkillCategorySchema),
   projects: z.array(ProjectSchema),
