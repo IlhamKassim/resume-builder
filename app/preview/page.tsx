@@ -212,9 +212,6 @@ export default function PreviewPage() {
         {coverLetterError && (
           <div className="max-w-[760px] mx-auto mt-2 blueprint-mono text-[12px] text-[var(--bp-accent)]">{coverLetterError}</div>
         )}
-        <p className="max-w-[760px] mx-auto mt-2 blueprint-mono text-[11px] text-[var(--bp-line-dim)] print:hidden">
-          Click any text below to edit it before saving as PDF.
-        </p>
         {fidelityWarnings.length > 0 && (
           <div className="max-w-[760px] mx-auto mt-2 blueprint-mono text-[11px] print:hidden border border-[var(--bp-accent)] px-2 py-1.5 space-y-0.5">
             <p className="text-[var(--bp-accent)]">
