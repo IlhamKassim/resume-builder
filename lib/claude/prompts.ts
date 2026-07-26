@@ -1,20 +1,8 @@
-import Anthropic from "@anthropic-ai/sdk";
-import { ResumeDataSchema, CoverLetterDataSchema } from "@/lib/types";
-import type { ProfileData, ResumeData, CoverLetterData } from "@/lib/types";
-import type { ZodType } from "zod";
-import { logUsage } from "@/lib/usage-log";
-import { checkResumeFidelity, type FidelityViolation } from "@/lib/fidelity-check";
-
-const client = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-  timeout: 55_000,
-});
-
 // Shared verbatim across every call (resume AND cover letter) so both share one prompt-cache
 // entry for CORE_RULES + the profile blob — see docs/adr/0001-shared-core-prompt-for-cross-task-caching.md.
 // Do not add task-specific rules here; put those in the per-task *_TASK_INSTRUCTIONS below instead,
 // or you'll silently break cache sharing between resume and cover-letter calls.
-const CORE_RULES = `You are a professional career-document writer. You work from a candidate's real profile data to produce a single tailored document for a specific job description.
+export const CORE_RULES = `You are a professional career-document writer. You work from a candidate's real profile data to produce a single tailored document for a specific job description.
 
 CRITICAL RULES, you must follow these without exception:
 1. FRAMING (the specific rules below do the real enforcement, this is context, not a substitute): work only from the provided profile data, never invent a skill, achievement, or responsibility with no basis anywhere in it. Generic accuracy appeals like this one are known to be an unreliable defense on their own (research on LLM summarization found that adding a generic "don't introduce inaccuracies" instruction can *increase* overgeneralization rather than reduce it) — rules 2 through 2f and rule 4 below are specific and structural precisely because that is what actually holds up, and are where your effort should concentrate.
@@ -31,7 +19,7 @@ PUNCTUATION: Do not use em dashes or semicolons anywhere in the output. Use comm
 
 BANNED WORDS: Never use these empty adjectives and clichés anywhere in the output, even when accurately describing the candidate: "passionate", "results-driven", "team player", "innovative", "detail-oriented", "hard worker", "self-starter", "motivated", "excellent communication skills", "strategic thinker". Every one of these is meaningless without evidence and is explicitly called out by recruiters as a red flag for unedited AI or low-effort writing. Replace the claim with the specific, concrete detail from the profile that would prove it instead (e.g. don't write "a strategic thinker", show the decision and its outcome).`;
 
-const RESUME_TASK_INSTRUCTIONS = `You are tailoring a resume to the job description below.
+export const RESUME_TASK_INSTRUCTIONS = `You are tailoring a resume to the job description below.
 
 TASK-SPECIFIC RULES, in addition to the rules above:
 1. You may rephrase and reorder existing information to highlight relevance, but every fact must trace back to the source profile.
@@ -101,7 +89,7 @@ OUTPUT SCHEMA:
   "certifications": ["string (certification name and issuer, e.g. 'Artificial Intelligence Foundations: Machine Learning (LinkedIn Learning)'). Omit field if none are relevant"]
 }`;
 
-const COVER_LETTER_TASK_INSTRUCTIONS = `You are writing a concise, tailored cover letter for the job description below.
+export const COVER_LETTER_TASK_INSTRUCTIONS = `You are writing a concise, tailored cover letter for the job description below.
 
 TASK-SPECIFIC RULES, in addition to the rules above:
 1. The letter MUST fit on ONE PAGE. Write EXACTLY 3 body paragraphs, 220–320 words total (excluding greeting/sign-off). Recruiters scan a cover letter for seconds, not minutes, so brevity beats a longer letter every time.
@@ -122,241 +110,3 @@ OUTPUT SCHEMA:
   "paragraphs": ["string (hook, ~1 quantified result)", "string (proof, 1 project/experience with a metric)", "string (fit, ties to specifics in the job posting)"],
   "signOff": "string"
 }`;
-
-export class TailoringError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "TailoringError";
-  }
-}
-
-function isRetryable(err: unknown): boolean {
-  return (
-    err instanceof Anthropic.RateLimitError ||
-    err instanceof Anthropic.APIConnectionError ||
-    err instanceof Anthropic.InternalServerError
-  );
-}
-
-async function callWithRetry(
-  fn: () => Promise<Anthropic.Message>,
-  maxRetries = 2
-): Promise<Anthropic.Message> {
-  let lastErr: unknown;
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    try {
-      return await fn();
-    } catch (err) {
-      if (isRetryable(err) && attempt < maxRetries) {
-        lastErr = err;
-        await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
-        continue;
-      }
-      throw err;
-    }
-  }
-  throw lastErr;
-}
-
-export interface TokenUsage {
-  inputTokens: number;
-  outputTokens: number;
-  /** Tokens written to the prompt cache this call (core rules + profile), billed at 1.25x input price. */
-  cacheCreationTokens: number;
-  /** Tokens read from the prompt cache this call, billed at 0.1x input price. */
-  cacheReadTokens: number;
-}
-
-function mapClaudeCallError(err: unknown, action: string): never {
-  if (err instanceof Anthropic.RateLimitError) {
-    throw new TailoringError(
-      `${action} failed — API rate limit reached. Please try again in a moment.`
-    );
-  }
-  if (err instanceof Anthropic.APIConnectionTimeoutError) {
-    throw new TailoringError(`${action} failed — request timed out. Please try again.`);
-  }
-  if (err instanceof Anthropic.APIConnectionError) {
-    throw new TailoringError(
-      `${action} failed — could not reach the AI service. Please check your connection and try again.`
-    );
-  }
-  throw err;
-}
-
-/** One attempt at getting well-formed, schema-valid JSON out of Claude. Network/rate-limit
- * errors are already retried inside callWithRetry and propagate out (via mapClaudeCallError)
- * rather than being returned here — only "we got a response but it wasn't usable" is a soft
- * failure, since that's the category worth retrying with a fresh generation. */
-async function attemptClaudeForJson<T>(opts: {
-  action: string;
-  logAction: "resume" | "cover-letter";
-  taskInstructions: string;
-  cacheableContext: string;
-  variableInput: string;
-  maxTokens: number;
-  schema: ZodType<T>;
-}): Promise<{ data: T; usage: TokenUsage } | { softFailure: string; usage: TokenUsage }> {
-  const { action, logAction, taskInstructions, cacheableContext, variableInput, maxTokens, schema } = opts;
-
-  let response: Anthropic.Message;
-  try {
-    response = await callWithRetry(() =>
-      client.messages.create({
-        model: process.env.ANTHROPIC_MODEL || "claude-sonnet-5",
-        max_tokens: maxTokens,
-        // NOTE: research on LLM summarization (generalization bias in scientific-abstract
-        // summaries, Royal Society Open Science 2026) found a 76% reduction in overgeneralization
-        // at temperature 0 vs. default sampling. Tried setting `temperature: 0` here, but the API
-        // rejects it outright for this model: "400 temperature is deprecated for this model" —
-        // confirmed live, every real generation failed until this was reverted. Left unset;
-        // revisit only if a future model/SDK version restores support for this parameter.
-        thinking: { type: "disabled" },
-        output_config: { effort: "high" },
-        system: [{ type: "text", text: CORE_RULES, cache_control: { type: "ephemeral" } }],
-        messages: [
-          {
-            role: "user",
-            content: [
-              { type: "text", text: cacheableContext, cache_control: { type: "ephemeral" } },
-              { type: "text", text: `${taskInstructions}\n\n${variableInput}` },
-            ],
-          },
-        ],
-      })
-    );
-  } catch (err) {
-    mapClaudeCallError(err, action);
-  }
-
-  const usage: TokenUsage = {
-    inputTokens: response.usage.input_tokens,
-    outputTokens: response.usage.output_tokens,
-    cacheCreationTokens: response.usage.cache_creation_input_tokens ?? 0,
-    cacheReadTokens: response.usage.cache_read_input_tokens ?? 0,
-  };
-  // Every attempt burns real tokens regardless of whether it ends up usable, so it must be
-  // logged for the balance estimator even when we go on to retry or fail.
-  await logUsage(logAction, usage);
-
-  const textBlock = response.content.find((block) => block.type === "text");
-  if (!textBlock || textBlock.type !== "text") {
-    return { softFailure: "no text response from AI", usage };
-  }
-
-  let parsed: unknown;
-  try {
-    // Strip markdown code fences if Claude includes them despite instructions
-    const cleaned = textBlock.text
-      .replace(/^```(?:json)?\n?/m, "")
-      .replace(/\n?```$/m, "")
-      .trim();
-    parsed = JSON.parse(cleaned);
-  } catch {
-    return { softFailure: "AI returned an unexpected format", usage };
-  }
-
-  const validated = schema.safeParse(parsed);
-  if (!validated.success) {
-    // Previously silent: a validation failure gave zero diagnostic info anywhere, making every
-    // schema mismatch a black box. Log the actual Zod issues server-side so a real failure (as
-    // opposed to a flaky retry) is debuggable instead of just "try again" forever.
-    console.error(`${action} — schema validation failed:`, JSON.stringify(validated.error.issues, null, 2));
-    return { softFailure: "AI output didn't match expected structure", usage };
-  }
-
-  return { data: validated.data, usage };
-}
-
-/** Soft failures (bad JSON, schema mismatch) are retried once with a fresh generation before
- * surfacing an error to the user — these are non-deterministic model slips, not systemic
- * problems, and a second attempt usually passes. Network/API errors are not retried here; they
- * already have their own retry inside callWithRetry and propagate out immediately. */
-async function callClaudeForJson<T>(opts: {
-  action: string;
-  /** Logged to the persistent usage log, distinct from the human-readable `action` message. */
-  logAction: "resume" | "cover-letter";
-  /** Resume- or cover-letter-specific rules + schema. Deliberately NOT cached (it's small and
-   * always accompanies the equally-uncached job description, so caching it buys nothing). */
-  taskInstructions: string;
-  /** Large, identical across every call regardless of task — cached. */
-  cacheableContext: string;
-  /** Changes every call (the job description) — never cached. */
-  variableInput: string;
-  maxTokens: number;
-  schema: ZodType<T>;
-}): Promise<{ data: T; usage: TokenUsage }> {
-  const maxSoftRetries = 1;
-
-  for (let attempt = 0; ; attempt++) {
-    const result = await attemptClaudeForJson(opts);
-    if ("data" in result) return result;
-
-    if (attempt < maxSoftRetries) {
-      console.error(`${opts.action} — soft failure (${result.softFailure}), retrying once`);
-      continue;
-    }
-
-    throw new TailoringError(`${opts.action} failed — ${result.softFailure}. Please try again.`);
-  }
-}
-
-export async function tailorResume(
-  profile: ProfileData,
-  jobDescription: string
-): Promise<{ resume: ResumeData; usage: TokenUsage; fidelityWarnings: FidelityViolation[] }> {
-  const cacheableContext = `PROFILE DATA:\n${JSON.stringify(profile, null, 2)}`;
-  const variableInput = `JOB DESCRIPTION:
-${jobDescription}
-
-Tailor the resume to this job description. Remember: only use facts from the profile data above.`;
-
-  const { data, usage } = await callClaudeForJson({
-    action: "Resume generation",
-    logAction: "resume",
-    taskInstructions: RESUME_TASK_INSTRUCTIONS,
-    cacheableContext,
-    variableInput,
-    maxTokens: 4096,
-    schema: ResumeDataSchema,
-  });
-
-  // Cheap, deterministic fidelity pass against the already-generated data (no extra API call) —
-  // the "content validation gate" stage of a layered hallucination-mitigation architecture,
-  // run automatically on every real generation rather than only via the manual npm script.
-  const fidelityWarnings = checkResumeFidelity(profile, data);
-
-  return { resume: data, usage, fidelityWarnings };
-}
-
-export async function generateCoverLetter(
-  profile: ProfileData,
-  jobDescription: string,
-  resume?: ResumeData
-): Promise<{ coverLetter: CoverLetterData; usage: TokenUsage }> {
-  const cacheableContext = `PROFILE DATA:\n${JSON.stringify(profile, null, 2)}`;
-  // Without this, the model has no way to know what the actual tailored resume contains (it only
-  // sees the full profile) and rule 2's "never repeat resume bullets" becomes unenforceable —
-  // it can only guess. Passing the real selection closes that gap.
-  const resumeContentNote = resume
-    ? `\n\nCONTENT ALREADY SHOWN ON THIS CANDIDATE'S RESUME FOR THIS APPLICATION (do not repeat these facts, bullets, or the same supporting evidence — pick different profile facts to support the letter instead):
-Experience entries shown: ${resume.experience.map((e) => `${e.title} at ${e.company}`).join("; ")}
-Projects shown: ${resume.projects.map((p) => p.name).join(", ")}`
-    : "";
-  const variableInput = `JOB DESCRIPTION:
-${jobDescription}${resumeContentNote}
-
-Write a tailored cover letter for this job description. Remember: only use facts from the profile data above.`;
-
-  const { data, usage } = await callClaudeForJson({
-    action: "Cover letter generation",
-    logAction: "cover-letter",
-    taskInstructions: COVER_LETTER_TASK_INSTRUCTIONS,
-    cacheableContext,
-    variableInput,
-    maxTokens: 1024,
-    schema: CoverLetterDataSchema,
-  });
-
-  return { coverLetter: data, usage };
-}

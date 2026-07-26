@@ -139,27 +139,52 @@ describe("tailorResume", () => {
     expect(usage.cacheReadTokens).toBe(0);
   });
 
-  it("throws when Claude returns invalid JSON", async () => {
-    mockCreate.mockResolvedValueOnce({
+  it("throws when Claude returns invalid JSON on both the initial attempt and its soft-failure retry", async () => {
+    const badResponse = {
       content: [{ type: "text", text: "Sorry, I cannot help with that." }],
-    });
+      usage: { input_tokens: 10, output_tokens: 5 },
+    };
+    mockCreate.mockResolvedValueOnce(badResponse).mockResolvedValueOnce(badResponse);
 
-    const { tailorResume } = await import("../claude");
-    await expect(tailorResume(profileFixture, jobDescriptionFixture)).rejects.toThrow();
+    const { tailorResume, TailoringError } = await import("../claude");
+    await expect(tailorResume(profileFixture, jobDescriptionFixture)).rejects.toThrow(TailoringError);
+    // One soft failure alone must not throw — callClaudeForJson retries once before giving up.
+    expect(mockCreate).toHaveBeenCalledTimes(2);
   });
 
-  it("throws when Claude returns JSON that fails ResumeData schema", async () => {
-    mockCreate.mockResolvedValueOnce({
+  it("throws when Claude returns JSON that fails ResumeData schema on both attempts", async () => {
+    const badResponse = {
       content: [
         {
           type: "text",
           text: JSON.stringify({ contact: { name: "Someone" }, summary: "" }),
         },
       ],
-    });
+      usage: { input_tokens: 10, output_tokens: 5 },
+    };
+    mockCreate.mockResolvedValueOnce(badResponse).mockResolvedValueOnce(badResponse);
+
+    const { tailorResume, TailoringError } = await import("../claude");
+    await expect(tailorResume(profileFixture, jobDescriptionFixture)).rejects.toThrow(TailoringError);
+    expect(mockCreate).toHaveBeenCalledTimes(2);
+  });
+
+  it("recovers when the first attempt returns invalid JSON and the retry succeeds", async () => {
+    mockCreate
+      .mockResolvedValueOnce({
+        content: [{ type: "text", text: "Sorry, I cannot help with that." }],
+        usage: { input_tokens: 10, output_tokens: 5 },
+      })
+      .mockResolvedValueOnce({
+        content: [{ type: "text", text: JSON.stringify(validResumeOutput) }],
+        usage: { input_tokens: 100, output_tokens: 50 },
+      });
 
     const { tailorResume } = await import("../claude");
-    await expect(tailorResume(profileFixture, jobDescriptionFixture)).rejects.toThrow();
+    const { resume } = await tailorResume(profileFixture, jobDescriptionFixture);
+
+    expect(resume.contact.name).toBe("Mohammad Ilham bin Kassim");
+    expect(mockCreate).toHaveBeenCalledTimes(2);
   });
 
   it("retries on rate limit and succeeds on second attempt", async () => {
@@ -254,36 +279,63 @@ describe("generateCoverLetter", () => {
     expect(JSON.stringify(userMessage.content)).toContain("Software Engineer Intern");
   });
 
-  it("throws when Claude returns invalid JSON", async () => {
-    mockCreate.mockResolvedValueOnce({
+  it("throws when Claude returns invalid JSON on both the initial attempt and its soft-failure retry", async () => {
+    const badResponse = {
       content: [{ type: "text", text: "Sorry, I cannot help with that." }],
-    });
+      usage: { input_tokens: 10, output_tokens: 5 },
+    };
+    mockCreate.mockResolvedValueOnce(badResponse).mockResolvedValueOnce(badResponse);
 
-    const { generateCoverLetter } = await import("../claude");
-    await expect(generateCoverLetter(profileFixture, jobDescriptionFixture)).rejects.toThrow();
+    const { generateCoverLetter, TailoringError } = await import("../claude");
+    await expect(generateCoverLetter(profileFixture, jobDescriptionFixture)).rejects.toThrow(TailoringError);
+    expect(mockCreate).toHaveBeenCalledTimes(2);
   });
 
-  it("throws when Claude returns JSON that fails CoverLetterData schema", async () => {
-    mockCreate.mockResolvedValueOnce({
+  it("throws when Claude returns JSON that fails CoverLetterData schema on both attempts", async () => {
+    const badResponse = {
       content: [{ type: "text", text: JSON.stringify({ greeting: "Hi," }) }],
-    });
+      usage: { input_tokens: 10, output_tokens: 5 },
+    };
+    mockCreate.mockResolvedValueOnce(badResponse).mockResolvedValueOnce(badResponse);
 
-    const { generateCoverLetter } = await import("../claude");
-    await expect(generateCoverLetter(profileFixture, jobDescriptionFixture)).rejects.toThrow();
+    const { generateCoverLetter, TailoringError } = await import("../claude");
+    await expect(generateCoverLetter(profileFixture, jobDescriptionFixture)).rejects.toThrow(TailoringError);
+    expect(mockCreate).toHaveBeenCalledTimes(2);
   });
 
-  it("rejects a paragraph count other than exactly 3", async () => {
-    mockCreate.mockResolvedValueOnce({
+  it("rejects a paragraph count other than exactly 3 on both attempts", async () => {
+    const badResponse = {
       content: [
         {
           type: "text",
           text: JSON.stringify({ ...validCoverLetterOutput, paragraphs: validCoverLetterOutput.paragraphs.slice(0, 2) }),
         },
       ],
-    });
+      usage: { input_tokens: 10, output_tokens: 5 },
+    };
+    mockCreate.mockResolvedValueOnce(badResponse).mockResolvedValueOnce(badResponse);
+
+    const { generateCoverLetter, TailoringError } = await import("../claude");
+    await expect(generateCoverLetter(profileFixture, jobDescriptionFixture)).rejects.toThrow(TailoringError);
+    expect(mockCreate).toHaveBeenCalledTimes(2);
+  });
+
+  it("recovers when the first attempt fails schema validation and the retry succeeds", async () => {
+    mockCreate
+      .mockResolvedValueOnce({
+        content: [{ type: "text", text: JSON.stringify({ greeting: "Hi," }) }],
+        usage: { input_tokens: 10, output_tokens: 5 },
+      })
+      .mockResolvedValueOnce({
+        content: [{ type: "text", text: JSON.stringify(validCoverLetterOutput) }],
+        usage: { input_tokens: 80, output_tokens: 40 },
+      });
 
     const { generateCoverLetter } = await import("../claude");
-    await expect(generateCoverLetter(profileFixture, jobDescriptionFixture)).rejects.toThrow();
+    const { coverLetter } = await generateCoverLetter(profileFixture, jobDescriptionFixture);
+
+    expect(coverLetter.greeting).toBe("Dear Hiring Manager,");
+    expect(mockCreate).toHaveBeenCalledTimes(2);
   });
 
   it("retries on rate limit and succeeds on second attempt", async () => {
