@@ -184,20 +184,19 @@ function mapClaudeCallError(err: unknown, action: string): never {
   throw err;
 }
 
-async function callClaudeForJson<T>(opts: {
+/** One attempt at getting well-formed, schema-valid JSON out of Claude. Network/rate-limit
+ * errors are already retried inside callWithRetry and propagate out (via mapClaudeCallError)
+ * rather than being returned here — only "we got a response but it wasn't usable" is a soft
+ * failure, since that's the category worth retrying with a fresh generation. */
+async function attemptClaudeForJson<T>(opts: {
   action: string;
-  /** Logged to the persistent usage log, distinct from the human-readable `action` message. */
   logAction: "resume" | "cover-letter";
-  /** Resume- or cover-letter-specific rules + schema. Deliberately NOT cached (it's small and
-   * always accompanies the equally-uncached job description, so caching it buys nothing). */
   taskInstructions: string;
-  /** Large, identical across every call regardless of task — cached. */
   cacheableContext: string;
-  /** Changes every call (the job description) — never cached. */
   variableInput: string;
   maxTokens: number;
   schema: ZodType<T>;
-}): Promise<{ data: T; usage: TokenUsage }> {
+}): Promise<{ data: T; usage: TokenUsage } | { softFailure: string; usage: TokenUsage }> {
   const { action, logAction, taskInstructions, cacheableContext, variableInput, maxTokens, schema } = opts;
 
   let response: Anthropic.Message;
@@ -230,9 +229,19 @@ async function callClaudeForJson<T>(opts: {
     mapClaudeCallError(err, action);
   }
 
+  const usage: TokenUsage = {
+    inputTokens: response.usage.input_tokens,
+    outputTokens: response.usage.output_tokens,
+    cacheCreationTokens: response.usage.cache_creation_input_tokens ?? 0,
+    cacheReadTokens: response.usage.cache_read_input_tokens ?? 0,
+  };
+  // Every attempt burns real tokens regardless of whether it ends up usable, so it must be
+  // logged for the balance estimator even when we go on to retry or fail.
+  await logUsage(logAction, usage);
+
   const textBlock = response.content.find((block) => block.type === "text");
   if (!textBlock || textBlock.type !== "text") {
-    throw new TailoringError(`${action} failed — no text response from AI. Please try again.`);
+    return { softFailure: "no text response from AI", usage };
   }
 
   let parsed: unknown;
@@ -244,9 +253,7 @@ async function callClaudeForJson<T>(opts: {
       .trim();
     parsed = JSON.parse(cleaned);
   } catch {
-    throw new TailoringError(
-      `${action} failed — AI returned an unexpected format. Please try again.`
-    );
+    return { softFailure: "AI returned an unexpected format", usage };
   }
 
   const validated = schema.safeParse(parsed);
@@ -255,20 +262,43 @@ async function callClaudeForJson<T>(opts: {
     // schema mismatch a black box. Log the actual Zod issues server-side so a real failure (as
     // opposed to a flaky retry) is debuggable instead of just "try again" forever.
     console.error(`${action} — schema validation failed:`, JSON.stringify(validated.error.issues, null, 2));
-    throw new TailoringError(
-      `${action} failed — AI output didn't match expected structure. Please try again.`
-    );
+    return { softFailure: "AI output didn't match expected structure", usage };
   }
 
-  const usage: TokenUsage = {
-    inputTokens: response.usage.input_tokens,
-    outputTokens: response.usage.output_tokens,
-    cacheCreationTokens: response.usage.cache_creation_input_tokens ?? 0,
-    cacheReadTokens: response.usage.cache_read_input_tokens ?? 0,
-  };
-  await logUsage(logAction, usage);
-
   return { data: validated.data, usage };
+}
+
+/** Soft failures (bad JSON, schema mismatch) are retried once with a fresh generation before
+ * surfacing an error to the user — these are non-deterministic model slips, not systemic
+ * problems, and a second attempt usually passes. Network/API errors are not retried here; they
+ * already have their own retry inside callWithRetry and propagate out immediately. */
+async function callClaudeForJson<T>(opts: {
+  action: string;
+  /** Logged to the persistent usage log, distinct from the human-readable `action` message. */
+  logAction: "resume" | "cover-letter";
+  /** Resume- or cover-letter-specific rules + schema. Deliberately NOT cached (it's small and
+   * always accompanies the equally-uncached job description, so caching it buys nothing). */
+  taskInstructions: string;
+  /** Large, identical across every call regardless of task — cached. */
+  cacheableContext: string;
+  /** Changes every call (the job description) — never cached. */
+  variableInput: string;
+  maxTokens: number;
+  schema: ZodType<T>;
+}): Promise<{ data: T; usage: TokenUsage }> {
+  const maxSoftRetries = 1;
+
+  for (let attempt = 0; ; attempt++) {
+    const result = await attemptClaudeForJson(opts);
+    if ("data" in result) return result;
+
+    if (attempt < maxSoftRetries) {
+      console.error(`${opts.action} — soft failure (${result.softFailure}), retrying once`);
+      continue;
+    }
+
+    throw new TailoringError(`${opts.action} failed — ${result.softFailure}. Please try again.`);
+  }
 }
 
 export async function tailorResume(

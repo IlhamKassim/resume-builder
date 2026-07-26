@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { readUsageLog, isPricingStale } from "@/lib/usage-log";
+import { readUsageLog } from "@/lib/usage-log";
+import { isPricingStale } from "@/lib/pricing";
 
 export async function GET() {
   const entries = await readUsageLog();

@@ -89,9 +89,11 @@ resume-builder/
 │   ├── my-profile.ts             # Real profile data — gitignored, not in repo
 │   ├── my-profile.example.ts     # Fake placeholder, committed
 │   ├── claude.ts                 # Claude API client + prompts
+│   ├── fidelity-check.ts         # Generated-output-vs-profile fidelity check
 │   ├── types.ts                  # ResumeData, ProfileData, etc.
 │   ├── job-listings.ts           # Static data for /jobs
-│   └── usage-log.ts              # Cost tracking
+│   ├── pricing.ts                # Pricing formula + staleness check (pure, no fs)
+│   └── usage-log.ts              # Cost tracking (persistence; pricing math lives in pricing.ts)
 ├── scripts/
 │   └── check-profile-fidelity.ts # Verbatim-field fidelity check
 ├── docs/adr/                     # Architecture decisions

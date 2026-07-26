@@ -7,13 +7,7 @@ import { JobDescriptionInput } from "@/components/JobDescriptionInput";
 import { BlueprintTitleBlock } from "@/components/BlueprintTitleBlock";
 import { BlueprintPipeline } from "@/components/BlueprintPipeline";
 import myProfile from "@/lib/my-profile";
-
-// Claude Sonnet 5 INTRO pricing (per million tokens) — ends 2026-08-31, see lib/usage-log.ts
-// and docs/adr/0002-migrate-to-sonnet-5-despite-post-intro-price-increase.md.
-const PRICE_INPUT_PER_M        = 2.00;
-const PRICE_CACHE_WRITE_PER_M  = 2.50; // 1.25x base — writing the 5-minute cache
-const PRICE_CACHE_READ_PER_M   = 0.20; // 0.1x base — reusing a cached prefix
-const PRICE_OUTPUT_PER_M       = 10.00;
+import { estimateCost } from "@/lib/pricing";
 
 interface SessionUsage {
   inputTokens: number;
@@ -33,18 +27,9 @@ interface Balance {
   estimatedRemaining: number;
 }
 
-function cost(usage: SessionUsage): number {
-  return (
-    (usage.inputTokens        / 1_000_000) * PRICE_INPUT_PER_M +
-    (usage.cacheCreationTokens / 1_000_000) * PRICE_CACHE_WRITE_PER_M +
-    (usage.cacheReadTokens    / 1_000_000) * PRICE_CACHE_READ_PER_M +
-    (usage.outputTokens       / 1_000_000) * PRICE_OUTPUT_PER_M
-  );
-}
-
 function UsageBar({ usage, allTime }: { usage: SessionUsage; allTime: AllTimeUsage | null }) {
   const totalTokens = usage.inputTokens + usage.outputTokens + usage.cacheCreationTokens + usage.cacheReadTokens;
-  const estimatedCost = cost(usage);
+  const estimatedCost = estimateCost(usage);
 
   return (
     <div className="border border-[var(--bp-panel-line)] px-4 py-3 flex items-center justify-between gap-4 blueprint-mono text-[11.5px]">
