@@ -98,21 +98,19 @@ export default function Home() {
   const [pricingStale, setPricingStale] = useState(false);
   const router = useRouter();
 
-  async function refreshUsage() {
-    try {
-      const res = await fetch("/api/usage");
-      if (!res.ok) return;
-      const data = await res.json();
-      setAllTimeUsage({ generations: data.totals.generations, cost: data.totals.cost });
-      setBalance(data.balance);
-      setPricingStale(Boolean(data.pricingStale));
-    } catch {
-      // Usage/balance are a nice-to-have; ignore fetch failures.
-    }
-  }
-
   useEffect(() => {
-    refreshUsage();
+    (async () => {
+      try {
+        const res = await fetch("/api/usage");
+        if (!res.ok) return;
+        const data = await res.json();
+        setAllTimeUsage({ generations: data.totals.generations, cost: data.totals.cost });
+        setBalance(data.balance);
+        setPricingStale(Boolean(data.pricingStale));
+      } catch {
+        // Usage/balance are a nice-to-have; ignore fetch failures.
+      }
+    })();
   }, []);
 
   async function handleGenerate(jobDescription: string) {

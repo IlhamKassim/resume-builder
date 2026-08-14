@@ -28,14 +28,44 @@ function setAtPath<T>(obj: T, path: (string | number)[], value: unknown): T {
   return clone as T;
 }
 
+function readSession(key: string): string | null {
+  return typeof window === "undefined" ? null : sessionStorage.getItem(key);
+}
+
 export default function PreviewPage() {
-  const [resumeData, setResumeData] = useState<ResumeData | null>(null);
-  const [jobDescription, setJobDescription] = useState<string | null>(null);
-  const [coverLetterData, setCoverLetterData] = useState<CoverLetterData | null>(null);
+  const [resumeData, setResumeData] = useState<ResumeData | null>(() => {
+    const raw = readSession("resumeData");
+    if (!raw) return null;
+    try {
+      return ResumeDataSchema.parse(JSON.parse(raw));
+    } catch {
+      return null;
+    }
+  });
+  const [jobDescription] = useState<string | null>(() => readSession("jobDescription"));
+  const [coverLetterData, setCoverLetterData] = useState<CoverLetterData | null>(() => {
+    const raw = readSession("coverLetterData");
+    if (!raw) return null;
+    try {
+      return CoverLetterDataSchema.parse(JSON.parse(raw));
+    } catch {
+      if (typeof window !== "undefined") sessionStorage.removeItem("coverLetterData");
+      return null;
+    }
+  });
   const [activeTab, setActiveTab] = useState<Tab>("resume");
   const [isGeneratingCoverLetter, setIsGeneratingCoverLetter] = useState(false);
   const [coverLetterError, setCoverLetterError] = useState<string | null>(null);
-  const [fidelityWarnings, setFidelityWarnings] = useState<FidelityViolation[]>([]);
+  const [fidelityWarnings, setFidelityWarnings] = useState<FidelityViolation[]>(() => {
+    const raw = readSession("fidelityWarnings");
+    if (!raw) return [];
+    try {
+      return JSON.parse(raw);
+    } catch {
+      if (typeof window !== "undefined") sessionStorage.removeItem("fidelityWarnings");
+      return [];
+    }
+  });
   const [checklistChecked, setChecklistChecked] = useState<boolean[]>(CHECKLIST_ITEMS.map(() => false));
   const previewRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -111,39 +141,10 @@ export default function PreviewPage() {
   }
 
   useEffect(() => {
-    const raw = sessionStorage.getItem("resumeData");
-    if (!raw) {
+    if (!resumeData) {
       router.replace("/");
-      return;
     }
-    try {
-      const parsed = ResumeDataSchema.parse(JSON.parse(raw));
-      setResumeData(parsed);
-    } catch {
-      router.replace("/");
-      return;
-    }
-
-    setJobDescription(sessionStorage.getItem("jobDescription"));
-
-    const rawFidelity = sessionStorage.getItem("fidelityWarnings");
-    if (rawFidelity) {
-      try {
-        setFidelityWarnings(JSON.parse(rawFidelity));
-      } catch {
-        sessionStorage.removeItem("fidelityWarnings");
-      }
-    }
-
-    const rawCoverLetter = sessionStorage.getItem("coverLetterData");
-    if (rawCoverLetter) {
-      try {
-        setCoverLetterData(CoverLetterDataSchema.parse(JSON.parse(rawCoverLetter)));
-      } catch {
-        sessionStorage.removeItem("coverLetterData");
-      }
-    }
-  }, [router]);
+  }, [resumeData, router]);
 
   if (!resumeData) {
     return (

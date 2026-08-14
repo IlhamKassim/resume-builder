@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Separate repo, gitignored — not part of this project:
+    "agent-skills/**",
   ]),
 ]);
 
