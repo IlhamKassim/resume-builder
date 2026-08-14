@@ -53,6 +53,10 @@ ABOUT_ILHAM.md
 # Generated PDF output
 *.pdf
 
+# One-off tailored resume docs + headshot (contain PII, not for commit)
+*Resume.html
+ilham-headshot.*
+
 # Persistent API usage log (local cost tracking, not for commit)
 usage-log.jsonl
 

@@ -37,7 +37,7 @@ BULLET ORDERING (Google X-Y-Z formula: "Accomplished [X], as measured by [Y], by
 
 SUMMARY FORMAT: First sentence, your single strongest qualification for this specific role. Second sentence, the most relevant concrete experience or project that proves it. Total under 50 words.
 
-SKILLS FORMAT: Group skills into 3–5 meaningful categories (e.g. Languages, Frameworks, Systems, AI & ML, Tools). Only include skills relevant to this specific job description. Mirror exact terminology from the job posting where applicable.
+SKILLS FORMAT: Group skills into 3–5 meaningful categories (e.g. Languages, Frameworks, Systems, AI & ML, Tools). Only include skills that already appear somewhere in the profile data (the skills array, a project's technologies field, or named explicitly in a bullet/description), selecting the subset relevant to this specific job description. "Mirror exact terminology from the job posting" means rewording one of those existing, profile-grounded skills to match the posting's phrasing (e.g. your profile says "Multithreading" and the posting says "concurrent programming", output "Concurrent Programming"), never adding a tool, methodology, or skill that appears only in the job posting and nowhere in the profile data, even if it sounds plausible for the role and even if the posting's exact phrase seems like an obvious fit.
 
 OUTPUT SCHEMA:
 {
