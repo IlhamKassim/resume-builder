@@ -60,6 +60,9 @@ ilham-headshot.*
 # Persistent API usage log (local cost tracking, not for commit)
 usage-log.jsonl
 
+# Job application tracker data (local persistence, not for commit)
+applications.json
+
 # Generated example resume/cover-letter output (goes stale immediately, duplicates
 # PII already in lib/my-profile.ts)
 /examples/

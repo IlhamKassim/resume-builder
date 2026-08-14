@@ -110,3 +110,25 @@ OUTPUT SCHEMA:
   "paragraphs": ["string (hook, ~1 quantified result)", "string (proof, 1 project/experience with a metric)", "string (fit, ties to specifics in the job posting)"],
   "signOff": "string"
 }`;
+
+export const INTERVIEW_PREP_TASK_INSTRUCTIONS = `You are generating interview-prep questions to help this candidate practice for a specific job description.
+
+TASK-SPECIFIC RULES, in addition to the rules above:
+1. Produce 8 to 12 questions total, grouped into exactly three categories: "technical", "behavioral", and "company-fit". Every question must carry one of those three exact category values, and all three categories must be represented.
+2. TECHNICAL questions: target only the skills, tools, or stack that are BOTH actually required in the job description AND present somewhere in the candidate's profile data. Never invent or assume a skill the candidate does not have, even if the posting lists it and it sounds like an obvious fit. If a job requirement has no matching profile skill, skip that topic rather than fabricating experience.
+3. BEHAVIORAL questions: use STAR framing (Situation, Task, Action, Result) and draw each one from a real experience entry or project in the profile data. Each behavioral question MUST include a short "hint" field naming which specific profile entry (the experience title/company or project name) the candidate should draw the story from, plus the angle to emphasize. Ground every hint entirely in real profile facts. Never invent a scenario, metric, or responsibility.
+4. COMPANY-FIT questions: reference only concrete details actually written in the job posting text (a named product, a stated tech stack, a listed responsibility, or a stated mission). Never invent company research, culture claims, or facts not present in the posting. If the posting is sparse and gives no concrete detail to anchor on, ask a generic company-fit question framed around the role's stated responsibilities instead of inventing specifics.
+5. Vary question difficulty and topic so the 8 to 12 questions read like a real interview-prep set, not a repeated template. Do not repeat the same question twice.
+6. If a "CONTENT ALREADY SHOWN ON THIS CANDIDATE'S RESUME" list appears below, prefer profile experiences or projects NOT on that list when choosing which entry to reference in a behavioral hint, so the candidate practices material beyond what is already on the resume. If every relevant entry is already on the resume, reference the best-matching entry and hint at a specific angle or outcome its resume bullets did not cover.
+7. Return ONLY a valid JSON object matching the schema below. No markdown, no explanation, no code fences. Follow every rule in the system prompt, including no em dashes or semicolons and no banned words.
+
+OUTPUT SCHEMA:
+{
+  "questions": [
+    {
+      "category": "string (exactly one of 'technical', 'behavioral', or 'company-fit')",
+      "question": "string (the interview question, STAR-framed for behavioral questions)",
+      "hint": "string (optional. For behavioral questions, name the specific profile entry to draw the story from and the angle to emphasize)"
+    }
+  ]
+}`;

@@ -1,7 +1,12 @@
-import { ResumeDataSchema, CoverLetterDataSchema } from "@/lib/types";
-import type { ProfileData, ResumeData, CoverLetterData } from "@/lib/types";
+import { ResumeDataSchema, CoverLetterDataSchema, InterviewPrepDataSchema } from "@/lib/types";
+import type { ProfileData, ResumeData, CoverLetterData, InterviewPrepData } from "@/lib/types";
 import { checkResumeFidelity, type FidelityViolation } from "@/lib/fidelity-check";
-import { CORE_RULES, RESUME_TASK_INSTRUCTIONS, COVER_LETTER_TASK_INSTRUCTIONS } from "./prompts";
+import {
+  CORE_RULES,
+  RESUME_TASK_INSTRUCTIONS,
+  COVER_LETTER_TASK_INSTRUCTIONS,
+  INTERVIEW_PREP_TASK_INSTRUCTIONS,
+} from "./prompts";
 import { callClaudeForJson, TailoringError, type TokenUsage } from "./json-call";
 
 export { TailoringError };
@@ -67,4 +72,37 @@ Write a tailored cover letter for this job description. Remember: only use facts
   });
 
   return { coverLetter: data, usage };
+}
+
+export async function generateInterviewQuestions(
+  profile: ProfileData,
+  jobDescription: string,
+  resume?: ResumeData
+): Promise<{ interviewPrep: InterviewPrepData; usage: TokenUsage }> {
+  const cacheableContext = `PROFILE DATA:\n${JSON.stringify(profile, null, 2)}`;
+  // Same reasoning as generateCoverLetter: without this the model has no way to know what the
+  // actual tailored resume contains, so behavioral-question hints can't steer the candidate
+  // toward experiences the resume didn't already cover.
+  const resumeContentNote = resume
+    ? `\n\nCONTENT ALREADY SHOWN ON THIS CANDIDATE'S RESUME FOR THIS APPLICATION (prefer other profile entries when choosing which experience or project a behavioral-question hint references):
+Experience entries shown: ${resume.experience.map((e) => `${e.title} at ${e.company}`).join("; ")}
+Projects shown: ${resume.projects.map((p) => p.name).join(", ")}`
+    : "";
+  const variableInput = `JOB DESCRIPTION:
+${jobDescription}${resumeContentNote}
+
+Generate interview-prep questions for this job description. Remember: only use facts from the profile data above.`;
+
+  const { data, usage } = await callClaudeForJson({
+    action: "Interview prep generation",
+    logAction: "interview-prep",
+    systemPrompt: CORE_RULES,
+    taskInstructions: INTERVIEW_PREP_TASK_INSTRUCTIONS,
+    cacheableContext,
+    variableInput,
+    maxTokens: 1500,
+    schema: InterviewPrepDataSchema,
+  });
+
+  return { interviewPrep: data, usage };
 }

@@ -77,7 +77,7 @@ function mapClaudeCallError(err: unknown, action: string): never {
  * ends up usable, and only this retry state machine knows how many attempts actually ran. */
 async function attemptClaudeForJson<T>(opts: {
   action: string;
-  logAction: "resume" | "cover-letter";
+  logAction: "resume" | "cover-letter" | "interview-prep";
   systemPrompt: string;
   taskInstructions: string;
   cacheableContext: string;
@@ -168,7 +168,7 @@ async function attemptClaudeForJson<T>(opts: {
 export async function callClaudeForJson<T>(opts: {
   action: string;
   /** Logged to the persistent usage log, distinct from the human-readable `action` message. */
-  logAction: "resume" | "cover-letter";
+  logAction: "resume" | "cover-letter" | "interview-prep";
   /** The cached system block — must be byte-identical across callers that want to share one
    * prompt-cache entry (see docs/adr/0001-shared-core-prompt-for-cross-task-caching.md). */
   systemPrompt: string;

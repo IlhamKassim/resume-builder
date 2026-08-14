@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { JobDescriptionInput } from "@/components/JobDescriptionInput";
+import { FitScan } from "@/components/FitScan";
 import { BlueprintTitleBlock } from "@/components/BlueprintTitleBlock";
 import { BlueprintPipeline } from "@/components/BlueprintPipeline";
 import myProfile from "@/lib/my-profile";
@@ -90,8 +91,8 @@ function BalanceLine({ balance }: { balance: Balance }) {
 
 export default function Home() {
   const [isGenerating, setIsGenerating] = useState(false);
+  const [jobDescription, setJobDescription] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [lastJobDescription, setLastJobDescription] = useState<string | null>(null);
   const [sessionUsage, setSessionUsage] = useState<SessionUsage | null>(null);
   const [allTimeUsage, setAllTimeUsage] = useState<AllTimeUsage | null>(null);
   const [balance, setBalance] = useState<Balance | null>(null);
@@ -113,10 +114,9 @@ export default function Home() {
     })();
   }, []);
 
-  async function handleGenerate(jobDescription: string) {
+  async function handleGenerate() {
     setIsGenerating(true);
     setError(null);
-    setLastJobDescription(jobDescription);
 
     try {
       const res = await fetch("/api/tailor", {
@@ -187,6 +187,8 @@ export default function Home() {
         <h2 className="text-[20px] font-normal mb-4">Control panel</h2>
         <div className="space-y-4">
           <JobDescriptionInput
+            jobDescription={jobDescription}
+            onJobDescriptionChange={setJobDescription}
             onGenerate={handleGenerate}
             isGenerating={isGenerating}
           />
@@ -194,17 +196,17 @@ export default function Home() {
           {error && (
             <div className="border border-[var(--bp-accent)] p-3 flex items-start justify-between gap-3">
               <p className="text-sm text-[var(--bp-line)]">{error}</p>
-              {lastJobDescription && (
-                <button
-                  onClick={() => handleGenerate(lastJobDescription)}
-                  disabled={isGenerating}
-                  className="blueprint-mono shrink-0 text-[11px] uppercase tracking-[0.04em] text-[var(--bp-accent)] underline underline-offset-2 disabled:opacity-50"
-                >
-                  Try again
-                </button>
-              )}
+              <button
+                onClick={handleGenerate}
+                disabled={isGenerating || !jobDescription.trim()}
+                className="blueprint-mono shrink-0 text-[11px] uppercase tracking-[0.04em] text-[var(--bp-accent)] underline underline-offset-2 disabled:opacity-50"
+              >
+                Try again
+              </button>
             </div>
           )}
+
+          <FitScan profile={myProfile} jobDescription={jobDescription} />
         </div>
 
         {sessionUsage && (

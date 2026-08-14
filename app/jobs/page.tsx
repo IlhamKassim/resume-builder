@@ -1,4 +1,5 @@
 import { BlueprintTitleBlock } from "@/components/BlueprintTitleBlock";
+import { TrackButton } from "@/components/TrackButton";
 import { jobListings, jobListingsCompiledOn, type ListingType } from "@/lib/job-listings";
 
 const TYPE_LABEL: Record<ListingType, string> = {
@@ -89,14 +90,23 @@ export default function JobsPage() {
                         {job.note && <span> — {job.note}</span>}
                       </p>
                     </div>
-                    <a
-                      href={job.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="shrink-0 blueprint-mono text-[11.5px] text-[var(--bp-line-dim)] hover:text-[var(--bp-accent)] underline underline-offset-2 mt-1"
-                    >
-                      {job.linkLabel} ↗
-                    </a>
+                    <div className="shrink-0 flex items-center gap-3">
+                      <TrackButton
+                        company={job.company}
+                        role={job.role}
+                        url={job.url}
+                        country={c.country}
+                        note={job.note}
+                      />
+                      <a
+                        href={job.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="blueprint-mono text-[11.5px] text-[var(--bp-line-dim)] hover:text-[var(--bp-accent)] underline underline-offset-2 mt-1"
+                      >
+                        {job.linkLabel} ↗
+                      </a>
+                    </div>
                   </div>
                 ))}
               </div>

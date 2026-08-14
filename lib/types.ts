@@ -90,6 +90,25 @@ export const CoverLetterDataSchema = z.object({
   signOff: z.string().min(1),
 });
 
+export const InterviewPrepDataSchema = z.object({
+  questions: z.array(
+    z.object({
+      category: z.enum(["technical", "behavioral", "company-fit"]),
+      question: z.string().min(1),
+      hint: z.string().optional(),
+    })
+  ),
+});
+
+export const InterviewPrepRequestSchema = z.object({
+  profile: ProfileDataSchema,
+  jobDescription: z.string().min(1),
+  // The already-generated tailored resume, so the model knows which profile facts are "already
+  // shown" and can direct behavioral-question hints at non-resume experiences instead. Optional
+  // for backward compatibility with older callers.
+  resume: ResumeDataSchema.optional(),
+});
+
 export type Experience = z.infer<typeof ExperienceSchema>;
 export type Education = z.infer<typeof EducationSchema>;
 export type Project = z.infer<typeof ProjectSchema>;
@@ -100,3 +119,5 @@ export type ResumeData = z.infer<typeof ResumeDataSchema>;
 export type TailorRequest = z.infer<typeof TailorRequestSchema>;
 export type CoverLetterData = z.infer<typeof CoverLetterDataSchema>;
 export type CoverLetterRequest = z.infer<typeof CoverLetterRequestSchema>;
+export type InterviewPrepData = z.infer<typeof InterviewPrepDataSchema>;
+export type InterviewPrepRequest = z.infer<typeof InterviewPrepRequestSchema>;
