@@ -51,7 +51,7 @@ export function TrackButton({ company, role, url, country, note }: Props) {
           role,
           url,
           country,
-          status: "saved" satisfies ApplicationStatus,
+          status: "applied" satisfies ApplicationStatus,
           notes: note ?? "",
         }),
       });
@@ -85,7 +85,7 @@ export function TrackButton({ company, role, url, country, note }: Props) {
         disabled={loading}
         className="blueprint-mono text-[11px] tracking-[0.04em] uppercase border border-[var(--bp-panel-line)] text-[var(--bp-line-dim)] px-2 py-1 hover:border-[var(--bp-accent)] hover:text-[var(--bp-accent)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed mt-1"
       >
-        {loading ? "Tracking…" : "Track"}
+        {loading ? "Saving…" : "Mark applied"}
       </button>
       {error && (
         <span className="blueprint-mono text-[10px] text-[var(--bp-accent)]">{error}</span>
