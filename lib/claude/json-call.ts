@@ -68,6 +68,45 @@ function mapClaudeCallError(err: unknown, action: string): never {
   throw err;
 }
 
+/** Pulls the JSON object out of a model response even when surrounding prose is present. Despite
+ * "return ONLY JSON, no explanation" in the system prompt, Claude sometimes wraps the object in
+ * commentary anyway — observed consistently when the job description is a poor fit for the
+ * candidate's profile (e.g. a sales role against a software-engineering profile), where the model
+ * feels compelled to caveat the mismatch before/after the JSON rather than silently comply. A
+ * naive strip-fences-at-the-string-boundary approach breaks on that prose, so this scans for the
+ * first `{` and walks forward counting brace depth (ignoring braces inside string literals) to
+ * find its matching close — which is correct regardless of what surrounds it. */
+function extractJsonObject(text: string): string {
+  const start = text.indexOf("{");
+  if (start === -1) return text.trim();
+
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+  for (let i = start; i < text.length; i++) {
+    const ch = text[i];
+    if (inString) {
+      if (escaped) {
+        escaped = false;
+      } else if (ch === "\\") {
+        escaped = true;
+      } else if (ch === '"') {
+        inString = false;
+      }
+      continue;
+    }
+    if (ch === '"') {
+      inString = true;
+    } else if (ch === "{") {
+      depth++;
+    } else if (ch === "}") {
+      depth--;
+      if (depth === 0) return text.slice(start, i + 1);
+    }
+  }
+  return text.slice(start).trim();
+}
+
 /** One attempt at getting well-formed, schema-valid JSON out of Claude. Network/rate-limit
  * errors are already retried inside callWithRetry and propagate out (via mapClaudeCallError)
  * rather than being returned here — only "we got a response but it wasn't usable" is a soft
@@ -135,12 +174,7 @@ async function attemptClaudeForJson<T>(opts: {
 
   let parsed: unknown;
   try {
-    // Strip markdown code fences if Claude includes them despite instructions
-    const cleaned = textBlock.text
-      .replace(/^```(?:json)?\n?/m, "")
-      .replace(/\n?```$/m, "")
-      .trim();
-    parsed = JSON.parse(cleaned);
+    parsed = JSON.parse(extractJsonObject(textBlock.text));
   } catch {
     return { softFailure: "AI returned an unexpected format", usage };
   }
