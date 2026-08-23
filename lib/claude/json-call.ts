@@ -65,6 +65,16 @@ function mapClaudeCallError(err: unknown, action: string): never {
       `${action} failed — could not reach the AI service. Please check your connection and try again.`
     );
   }
+  if (err instanceof Anthropic.BadRequestError) {
+    const body = err.error as { error?: { message?: string } } | undefined;
+    const detail = body?.error?.message;
+    if (detail?.toLowerCase().includes("credit balance")) {
+      throw new TailoringError(
+        `${action} failed — the Anthropic account is out of API credits. Add credits at console.anthropic.com and try again.`
+      );
+    }
+    throw new TailoringError(`${action} failed — ${detail ?? "the request was rejected by the AI service"}.`);
+  }
   throw err;
 }
 
@@ -229,4 +239,72 @@ export async function callClaudeForJson<T>(opts: {
 
     throw new TailoringError(`${opts.action} failed — ${result.softFailure}. Please try again.`);
   }
+}
+
+/** Like callClaudeForJson, but grants the model a server-executed web_search tool instead of
+ * pulling from static context. Anthropic runs the searches itself and interleaves
+ * server_tool_use/web_search_tool_result blocks into the response — there is no client-side tool
+ * loop to drive. No prompt caching (the whole point is fresh, non-repeated content) and no soft-
+ * failure retry (a failed search-and-compile round is expensive; better to surface the error than
+ * silently burn it twice). Token-based cost estimates in lib/pricing.ts don't include the
+ * per-search fee Anthropic bills for web_search — logged usage here will read as a slight
+ * undercount for this action. */
+export async function callClaudeWithWebSearchForJson<T>(opts: {
+  action: string;
+  logAction: "job-dossier";
+  systemPrompt: string;
+  userPrompt: string;
+  maxUses?: number;
+  maxTokens: number;
+  schema: ZodType<T>;
+}): Promise<{ data: T; usage: TokenUsage }> {
+  const { action, logAction, systemPrompt, userPrompt, maxUses = 12, maxTokens, schema } = opts;
+
+  let response: Anthropic.Message;
+  try {
+    response = await callWithRetry(() =>
+      client.messages.create({
+        model: process.env.ANTHROPIC_MODEL || "claude-sonnet-5",
+        max_tokens: maxTokens,
+        thinking: { type: "disabled" },
+        tools: [{ type: "web_search_20250305", name: "web_search", max_uses: maxUses }],
+        system: [{ type: "text", text: systemPrompt }],
+        messages: [{ role: "user", content: userPrompt }],
+      })
+    );
+  } catch (err) {
+    mapClaudeCallError(err, action);
+  }
+
+  const usage: TokenUsage = {
+    inputTokens: response.usage.input_tokens,
+    outputTokens: response.usage.output_tokens,
+    cacheCreationTokens: response.usage.cache_creation_input_tokens ?? 0,
+    cacheReadTokens: response.usage.cache_read_input_tokens ?? 0,
+  };
+  await logUsage(logAction, usage);
+
+  const text = response.content
+    .filter((block) => block.type === "text")
+    .map((block) => block.text)
+    .join("\n");
+
+  if (!text) {
+    throw new TailoringError(`${action} failed — the AI didn't return a usable result. Please try again.`);
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(extractJsonObject(text));
+  } catch {
+    throw new TailoringError(`${action} failed — AI returned an unexpected format. Please try again.`);
+  }
+
+  const validated = schema.safeParse(parsed);
+  if (!validated.success) {
+    console.error(`${action} — schema validation failed:`, JSON.stringify(validated.error.issues, null, 2));
+    throw new TailoringError(`${action} failed — AI output didn't match expected structure. Please try again.`);
+  }
+
+  return { data: validated.data, usage };
 }

@@ -8,7 +8,7 @@ const LOG_PATH = path.join(process.cwd(), "usage-log.jsonl");
 export interface GenerationLogEntry {
   type: "generation";
   timestamp: string;
-  action: "resume" | "cover-letter" | "interview-prep";
+  action: "resume" | "cover-letter" | "interview-prep" | "job-dossier";
   usage: TokenUsage;
   cost: number;
 }

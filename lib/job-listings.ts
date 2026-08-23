@@ -1,19 +1,33 @@
-export type ListingType = "direct" | "page" | "program";
+import { z } from "zod";
 
-export interface JobListing {
-  company: string;
-  role: string;
-  note?: string;
-  type: ListingType;
-  url: string;
-  linkLabel: string;
-}
+export const ListingTypeSchema = z.enum(["direct", "page", "program"]);
+export type ListingType = z.infer<typeof ListingTypeSchema>;
 
-export interface CountryListings {
-  country: string;
-  blurb: string;
-  listings: JobListing[];
-}
+export const JobListingSchema = z.object({
+  company: z.string().min(1),
+  role: z.string().min(1),
+  note: z.string().optional(),
+  type: ListingTypeSchema,
+  url: z.string().url(),
+  linkLabel: z.string().min(1),
+});
+export type JobListing = z.infer<typeof JobListingSchema>;
+
+export const CountryListingsSchema = z.object({
+  country: z.string().min(1),
+  blurb: z.string().min(1),
+  listings: z.array(JobListingSchema),
+});
+export type CountryListings = z.infer<typeof CountryListingsSchema>;
+
+/** Persisted shape for the refreshable dossier (see lib/job-dossier-store.ts). The hardcoded
+ * `jobListings`/`jobListingsCompiledOn` below double as the seed value used before the first
+ * "Refresh Dossier" call ever writes job-listings.json. */
+export const JobDossierSchema = z.object({
+  compiledOn: z.string().min(1),
+  countries: z.array(CountryListingsSchema),
+});
+export type JobDossier = z.infer<typeof JobDossierSchema>;
 
 export const jobListingsCompiledOn = "2026-08-14";
 

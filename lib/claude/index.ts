@@ -1,13 +1,21 @@
+import { z } from "zod";
 import { ResumeDataSchema, CoverLetterDataSchema, InterviewPrepDataSchema } from "@/lib/types";
 import type { ProfileData, ResumeData, CoverLetterData, InterviewPrepData } from "@/lib/types";
 import { checkResumeFidelity, type FidelityViolation } from "@/lib/fidelity-check";
+import { CountryListingsSchema, type CountryListings } from "@/lib/job-listings";
 import {
   CORE_RULES,
   RESUME_TASK_INSTRUCTIONS,
   COVER_LETTER_TASK_INSTRUCTIONS,
   INTERVIEW_PREP_TASK_INSTRUCTIONS,
+  JOB_DOSSIER_SYSTEM_PROMPT,
 } from "./prompts";
-import { callClaudeForJson, TailoringError, type TokenUsage } from "./json-call";
+import {
+  callClaudeForJson,
+  callClaudeWithWebSearchForJson,
+  TailoringError,
+  type TokenUsage,
+} from "./json-call";
 
 export { TailoringError };
 export type { TokenUsage };
@@ -105,4 +113,26 @@ Generate interview-prep questions for this job description. Remember: only use f
   });
 
   return { interviewPrep: data, usage };
+}
+
+const JobDossierResultSchema = z.object({ countries: z.array(CountryListingsSchema) });
+
+export async function generateJobDossier(
+  excludeCompanies: string[]
+): Promise<{ countries: CountryListings[]; usage: TokenUsage }> {
+  const excludeBlock = excludeCompanies.length
+    ? `\n\nEXCLUDE list — the candidate already has these companies on their active application list, do not list any of them in any country:\n${excludeCompanies.join(", ")}`
+    : "";
+
+  const { data, usage } = await callClaudeWithWebSearchForJson({
+    action: "Job dossier refresh",
+    logAction: "job-dossier",
+    systemPrompt: JOB_DOSSIER_SYSTEM_PROMPT,
+    userPrompt: `Compile a fresh job dossier now, following every rule in the system prompt.${excludeBlock}`,
+    maxUses: 15,
+    maxTokens: 8000,
+    schema: JobDossierResultSchema,
+  });
+
+  return { countries: data.countries, usage };
 }

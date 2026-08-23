@@ -1,6 +1,8 @@
 import { BlueprintTitleBlock } from "@/components/BlueprintTitleBlock";
 import { TrackButton } from "@/components/TrackButton";
-import { jobListings, jobListingsCompiledOn, type ListingType } from "@/lib/job-listings";
+import { RefreshDossierButton } from "@/components/RefreshDossierButton";
+import { type ListingType } from "@/lib/job-listings";
+import { readDossier } from "@/lib/job-dossier-store";
 
 const TYPE_LABEL: Record<ListingType, string> = {
   direct: "Direct",
@@ -14,9 +16,10 @@ const TYPE_CLASSES: Record<ListingType, string> = {
   program: "border-[var(--bp-line-dim)] text-[var(--bp-label)]",
 };
 
-export default function JobsPage() {
+export default async function JobsPage() {
+  const { compiledOn, countries: jobListings } = await readDossier();
   const total = jobListings.reduce((sum, c) => sum + c.listings.length, 0);
-  const compiledDate = new Date(jobListingsCompiledOn).toLocaleDateString("en-US", {
+  const compiledDate = new Date(compiledOn).toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
     day: "numeric",
@@ -33,12 +36,15 @@ export default function JobsPage() {
           backHref="/"
         />
 
-        <p className="blueprint-mono text-[11.5px] text-[var(--bp-line-dim)] max-w-[62ch] mb-8 -mt-4">
-          Compiled {compiledDate} from a live web search — not a monitored feed. &ldquo;Direct&rdquo;{" "}
-          links can go stale within days; &ldquo;Careers page&rdquo; links are the more durable bet
-          since they always show whatever is currently open. Re-verify before applying, and for UK
-          roles confirm sponsorship on the specific req.
-        </p>
+        <div className="flex items-start justify-between gap-4 mb-8 -mt-4">
+          <p className="blueprint-mono text-[11.5px] text-[var(--bp-line-dim)] max-w-[62ch]">
+            Compiled {compiledDate} from a live web search — not a monitored feed. &ldquo;Direct&rdquo;{" "}
+            links can go stale within days; &ldquo;Careers page&rdquo; links are the more durable bet
+            since they always show whatever is currently open. Re-verify before applying, and for UK
+            roles confirm sponsorship on the specific req.
+          </p>
+          <RefreshDossierButton />
+        </div>
 
         <div className="flex flex-wrap gap-2 mb-10">
           {jobListings.map((c) => (

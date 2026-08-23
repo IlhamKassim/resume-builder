@@ -63,6 +63,10 @@ usage-log.jsonl
 # Job application tracker data (local persistence, not for commit)
 applications.json
 
+# Refreshed job dossier (regenerated via "Refresh dossier" on /jobs, not for commit — the
+# hardcoded seed in lib/job-listings.ts is the committed fallback)
+job-listings.json
+
 # Generated example resume/cover-letter output (goes stale immediately, duplicates
 # PII already in lib/my-profile.ts)
 /examples/
