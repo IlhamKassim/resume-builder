@@ -10,6 +10,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "check:fidelity": "node --env-file=.env.local --import tsx scripts/check-profile-fidelity.ts",
+    "prototype:deepseek": "node --env-file=.env.local --import tsx scripts/prototype-deepseek-vs-claude.ts",
     "log-topup": "node --import tsx scripts/log-topup.ts",
     "log-adjustment": "node --import tsx scripts/log-adjustment.ts"
   },
