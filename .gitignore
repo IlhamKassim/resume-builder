@@ -74,3 +74,6 @@ job-listings.json
 # Real profile data (name, contact info, work history) — not for commit.
 # Copy lib/my-profile.example.ts to lib/my-profile.ts and fill in your own data.
 lib/my-profile.ts
+
+# Output from scripts/prototype-deepseek-vs-claude.ts (generated resume JSON/PDF, contains PII)
+.prototype-output/

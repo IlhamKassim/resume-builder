@@ -1,7 +1,7 @@
 import { appendFile, readFile } from "fs/promises";
 import path from "path";
 import type { TokenUsage } from "@/lib/claude";
-import { estimateCost } from "@/lib/pricing";
+import { estimateCost, type Provider } from "@/lib/pricing";
 
 const LOG_PATH = path.join(process.cwd(), "usage-log.jsonl");
 
@@ -9,6 +9,9 @@ export interface GenerationLogEntry {
   type: "generation";
   timestamp: string;
   action: "resume" | "cover-letter" | "interview-prep" | "job-dossier";
+  // Optional so old log lines written before the DeepSeek toggle existed still parse — absence
+  // means "claude", the only provider that existed when those entries were written.
+  provider?: Provider;
   usage: TokenUsage;
   cost: number;
 }
@@ -43,14 +46,16 @@ async function appendEntry(entry: UsageLogEntry): Promise<void> {
 
 export async function logUsage(
   action: GenerationLogEntry["action"],
-  usage: TokenUsage
+  usage: TokenUsage,
+  provider: Provider = "claude"
 ): Promise<void> {
   await appendEntry({
     type: "generation",
     timestamp: new Date().toISOString(),
     action,
+    provider,
     usage,
-    cost: estimateCost(usage),
+    cost: estimateCost(usage, provider),
   });
 }
 

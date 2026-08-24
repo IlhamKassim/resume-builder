@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { TailorRequestSchema } from "@/lib/types";
 import { tailorResume, TailoringError } from "@/lib/claude";
+import { tailorResumeWithDeepSeek } from "@/lib/deepseek";
+import { estimateCost } from "@/lib/pricing";
 
 export async function POST(req: NextRequest) {
   let body: unknown;
@@ -19,11 +21,16 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { resume, usage, fidelityWarnings } = await tailorResume(
-      parsed.data.profile,
-      parsed.data.jobDescription
-    );
-    return NextResponse.json({ ...resume, _usage: usage, _fidelityWarnings: fidelityWarnings });
+    const { resume, usage, fidelityWarnings } =
+      parsed.data.provider === "deepseek"
+        ? await tailorResumeWithDeepSeek(parsed.data.profile, parsed.data.jobDescription)
+        : await tailorResume(parsed.data.profile, parsed.data.jobDescription);
+    return NextResponse.json({
+      ...resume,
+      _usage: usage,
+      _fidelityWarnings: fidelityWarnings,
+      _cost: estimateCost(usage, parsed.data.provider),
+    });
   } catch (err) {
     if (err instanceof TailoringError) {
       return NextResponse.json({ error: err.message }, { status: 422 });

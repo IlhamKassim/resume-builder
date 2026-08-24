@@ -3,12 +3,11 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { JobDescriptionInput } from "@/components/JobDescriptionInput";
+import { JobDescriptionInput, type ResumeProvider } from "@/components/JobDescriptionInput";
 import { FitScan } from "@/components/FitScan";
 import { BlueprintTitleBlock } from "@/components/BlueprintTitleBlock";
 import { BlueprintPipeline } from "@/components/BlueprintPipeline";
 import myProfile from "@/lib/my-profile";
-import { estimateCost } from "@/lib/pricing";
 
 interface SessionUsage {
   inputTokens: number;
@@ -16,6 +15,11 @@ interface SessionUsage {
   cacheCreationTokens: number;
   cacheReadTokens: number;
   generations: number;
+  // Accumulated from the server-computed `_cost` on each response (lib/pricing.ts's
+  // estimateCost, run with the right provider's price table) rather than re-derived client-side
+  // from raw token totals — a session that mixes Claude and DeepSeek generations would otherwise
+  // run both providers' tokens through a single price table and silently misreport spend.
+  cost: number;
 }
 
 interface AllTimeUsage {
@@ -30,7 +34,7 @@ interface Balance {
 
 function UsageBar({ usage, allTime }: { usage: SessionUsage; allTime: AllTimeUsage | null }) {
   const totalTokens = usage.inputTokens + usage.outputTokens + usage.cacheCreationTokens + usage.cacheReadTokens;
-  const estimatedCost = estimateCost(usage);
+  const estimatedCost = usage.cost;
 
   return (
     <div className="border border-[var(--bp-panel-line)] px-4 py-3 flex items-center justify-between gap-4 blueprint-mono text-[11.5px]">
@@ -97,6 +101,7 @@ export default function Home() {
   const [allTimeUsage, setAllTimeUsage] = useState<AllTimeUsage | null>(null);
   const [balance, setBalance] = useState<Balance | null>(null);
   const [pricingStale, setPricingStale] = useState(false);
+  const [provider, setProvider] = useState<ResumeProvider>("claude");
   const router = useRouter();
 
   useEffect(() => {
@@ -114,6 +119,21 @@ export default function Home() {
     })();
   }, []);
 
+  useEffect(() => {
+    // Reading localStorage must happen post-mount to avoid a server/client hydration mismatch —
+    // same reasoning as BlueprintThemeToggle's theme read.
+    const stored = window.localStorage.getItem("bp-provider") as ResumeProvider | null;
+    if (stored === "claude" || stored === "deepseek") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setProvider(stored);
+    }
+  }, []);
+
+  function handleProviderChange(next: ResumeProvider) {
+    setProvider(next);
+    window.localStorage.setItem("bp-provider", next);
+  }
+
   async function handleGenerate() {
     setIsGenerating(true);
     setError(null);
@@ -122,7 +142,7 @@ export default function Home() {
       const res = await fetch("/api/tailor", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ profile: myProfile, jobDescription }),
+        body: JSON.stringify({ profile: myProfile, jobDescription, provider }),
       });
       const data = await res.json();
 
@@ -138,10 +158,11 @@ export default function Home() {
           cacheCreationTokens: (prev?.cacheCreationTokens ?? 0) + (data._usage.cacheCreationTokens ?? 0),
           cacheReadTokens:     (prev?.cacheReadTokens     ?? 0) + (data._usage.cacheReadTokens ?? 0),
           generations:         (prev?.generations         ?? 0) + 1,
+          cost:                (prev?.cost                ?? 0) + (data._cost ?? 0),
         }));
       }
 
-      const { _usage: _, _fidelityWarnings, ...resumeData } = data;
+      const { _usage: _, _fidelityWarnings, _cost: __, ...resumeData } = data;
       sessionStorage.setItem("resumeData", JSON.stringify(resumeData));
       sessionStorage.setItem("jobDescription", jobDescription);
       sessionStorage.setItem("fidelityWarnings", JSON.stringify(_fidelityWarnings ?? []));
@@ -191,6 +212,8 @@ export default function Home() {
             onJobDescriptionChange={setJobDescription}
             onGenerate={handleGenerate}
             isGenerating={isGenerating}
+            provider={provider}
+            onProviderChange={handleProviderChange}
           />
 
           {error && (

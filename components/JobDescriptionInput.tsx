@@ -1,17 +1,28 @@
 "use client";
 
+export type ResumeProvider = "claude" | "deepseek";
+
 interface Props {
   jobDescription: string;
   onJobDescriptionChange: (value: string) => void;
   onGenerate: () => void;
   isGenerating: boolean;
+  provider: ResumeProvider;
+  onProviderChange: (provider: ResumeProvider) => void;
 }
+
+const PROVIDER_LABEL: Record<ResumeProvider, string> = {
+  claude: "Claude",
+  deepseek: "DeepSeek",
+};
 
 export function JobDescriptionInput({
   jobDescription,
   onJobDescriptionChange,
   onGenerate,
   isGenerating,
+  provider,
+  onProviderChange,
 }: Props) {
   return (
     <div className="border border-[var(--bp-panel-line)] p-6 grid gap-4.5">
@@ -35,7 +46,31 @@ export function JobDescriptionInput({
         </p>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 flex-wrap">
+        <div
+          className="flex items-center border border-[var(--bp-panel-line)] p-0.5 blueprint-mono text-[11px] tracking-[0.04em] uppercase"
+          role="radiogroup"
+          aria-label="Resume generation provider"
+        >
+          {(Object.keys(PROVIDER_LABEL) as ResumeProvider[]).map((p) => (
+            <button
+              key={p}
+              type="button"
+              role="radio"
+              aria-checked={provider === p}
+              onClick={() => onProviderChange(p)}
+              disabled={isGenerating}
+              className={`px-3 py-1.5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+                provider === p
+                  ? "bg-[var(--bp-panel-line)] text-[var(--bp-line)]"
+                  : "text-[var(--bp-line-dim)] hover:text-[var(--bp-line)]"
+              }`}
+            >
+              {PROVIDER_LABEL[p]}
+            </button>
+          ))}
+        </div>
+
         <button
           onClick={onGenerate}
           disabled={!jobDescription.trim() || isGenerating}

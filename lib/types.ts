@@ -74,6 +74,7 @@ export const ResumeDataSchema = z.object({
 export const TailorRequestSchema = z.object({
   profile: ProfileDataSchema,
   jobDescription: z.string().min(1),
+  provider: z.enum(["claude", "deepseek"]).optional().default("claude"),
 });
 
 export const CoverLetterRequestSchema = z.object({
