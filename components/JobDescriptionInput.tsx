@@ -1,5 +1,8 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { Loader2 } from "lucide-react";
+
 export type ResumeProvider = "claude" | "deepseek";
 
 interface Props {
@@ -15,6 +18,32 @@ const PROVIDER_LABEL: Record<ResumeProvider, string> = {
   claude: "Claude",
   deepseek: "DeepSeek",
 };
+
+const GENERATION_STEPS = [
+  "Parsing specification…",
+  "Selecting relevant experience…",
+  "Drafting bullet points…",
+  "Verifying ATS fidelity…",
+];
+
+function GeneratingStatus() {
+  const [stepIndex, setStepIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setStepIndex((prev) => (prev < GENERATION_STEPS.length - 1 ? prev + 1 : prev));
+    }, 3500);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <>
+      <Loader2 className="w-3.5 h-3.5 animate-spin text-[var(--bp-accent)] shrink-0" />
+      <span>{GENERATION_STEPS[stepIndex]}</span>
+    </>
+  );
+}
 
 export function JobDescriptionInput({
   jobDescription,
@@ -74,17 +103,11 @@ export function JobDescriptionInput({
         <button
           onClick={onGenerate}
           disabled={!jobDescription.trim() || isGenerating}
-          className="relative blueprint-mono text-[11.5px] tracking-[0.06em] uppercase bg-[var(--bp-panel)] border-[1.3px] border-[var(--bp-line)] text-[var(--bp-line)] px-5 py-2.5 transition-[transform,background-color] hover:enabled:bg-[var(--bp-panel-line)] active:enabled:translate-y-px disabled:opacity-40 disabled:cursor-not-allowed before:content-[''] before:absolute before:left-[-1.3px] before:top-[-1.3px] before:bottom-[-1.3px] before:w-1 before:bg-[var(--bp-accent)] before:opacity-0 data-[armed=true]:before:opacity-100"
+          className="relative inline-flex items-center justify-center gap-2 min-w-[280px] blueprint-mono text-[11.5px] tracking-[0.06em] uppercase bg-[var(--bp-panel)] border-[1.3px] border-[var(--bp-line)] text-[var(--bp-line)] px-5 py-2.5 transition-[transform,background-color] hover:enabled:bg-[var(--bp-panel-line)] active:enabled:translate-y-px disabled:opacity-40 disabled:cursor-not-allowed before:content-[''] before:absolute before:left-[-1.3px] before:top-[-1.3px] before:bottom-[-1.3px] before:w-1 before:bg-[var(--bp-accent)] before:opacity-0 data-[armed=true]:before:opacity-100"
           data-armed={isGenerating}
         >
-          {isGenerating ? "Engine engaged…" : "Actuate — Generate Resume"}
+          {isGenerating ? <GeneratingStatus /> : "Actuate — Generate Resume"}
         </button>
-
-        {isGenerating && (
-          <span className="blueprint-mono text-[11px] text-[var(--bp-accent)]">
-            This takes about 10–15 seconds
-          </span>
-        )}
       </div>
     </div>
   );
