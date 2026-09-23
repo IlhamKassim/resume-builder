@@ -17,3 +17,7 @@ Default label vocabulary (needs-triage, needs-info, ready-for-agent, ready-for-h
 ### Domain docs
 
 Single-context: `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
+
+### Cost guardrails
+
+Never call the job-dossier refresh API (or other actions gated behind the user's own pay-as-you-go API key) on the user's behalf. See `docs/agents/cost-guardrails.md`.
